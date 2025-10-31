@@ -1,5 +1,6 @@
 package com.group.library_system.library_system.repository;
 
+import com.group.library_system.library_system.service.UserService;
 import org.assertj.core.api.Assertions;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,6 @@ public class UserServiceTest {
     private UserRepository userRepository;
 
     private User createTestUser(String id) {
-        // 실제 User Entity 필드에 맞게 데이터를 채워야 합니다.
-
         return new User(null, "Kim", id, "eee", null, "010-0000", null);
     }
 
@@ -44,11 +43,8 @@ public class UserServiceTest {
 
         //then
         Optional<User> id = userRepository.findById("123456789");
-
         Assertions.assertThat(id).isPresent();
-
         User foundUser = id.get();
-
         Assertions.assertThat(foundUser.getId()).isEqualTo("123456789");
     }
 
@@ -57,7 +53,6 @@ public class UserServiceTest {
     void userServiceFail() {
 
         //given
-
         User user1 = createTestUser("123456789");
         User user2 = createTestUser("11111");
         User user3 = createTestUser("123456789");
@@ -66,6 +61,7 @@ public class UserServiceTest {
         userService.registerUser(user1);
         userService.registerUser(user2);
 
+        //then
         assertThatThrownBy(() -> userService.registerUser(user3))
                 .isInstanceOf(IllegalArgumentException.class) // 예외 타입 검증
                 .hasMessageContaining("아이디가 중복되었습니다."); // 메시지 검증
