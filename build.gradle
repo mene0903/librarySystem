@@ -28,13 +28,28 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// Lombok은 한 번만 정의합니다.
 	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
+	// 테스트 관련 의존성
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+	jvmArgs += [
+			'-Xshare:off',
+			'--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+			'--add-opens', 'java.base/java.lang.invoke=ALL-UNNAMED',
+			'-javaagent:' + configurations.testRuntimeClasspath.find {
+				it.name.contains('byte-buddy-agent')
+			}.getAbsolutePath()
+	]
 }
