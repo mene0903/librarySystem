@@ -68,5 +68,46 @@ public class UserServiceTest {
 
     }
 
-}
 
+    @Test
+    @DisplayName("로그인 성공")
+    void loginSuccess() {
+        //given
+        User user = createTestUser("123456789");
+        //when
+        userService.registerUser(user);
+        //then
+        Assertions.assertThat(userService.login("123456789", "eee")).isEqualTo(user);
+    }
+
+    @Test
+    @DisplayName("로그인 실패 (비밀번호)")
+    void loginFailPassword() {
+        //given
+        User user = createTestUser("123456789");
+        //when
+        userService.registerUser(user);
+        //then
+        assertThatThrownBy(() ->
+                userService.login("123456789", "wrongPass")
+        )
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("비밀번호가 일치하지 않습니다.");
+    }
+
+    @Test
+    @DisplayName("로그인 실패 (아이디)")
+    void loginFailID() {
+        //given
+        User user = createTestUser("123456789");
+        //when
+        userService.registerUser(user);
+        //then
+        assertThatThrownBy(() ->
+                userService.login("dowi", "eee")
+        )
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("아이디가 존재하지 않습니다.");
+    }
+
+}
