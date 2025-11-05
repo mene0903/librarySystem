@@ -7,29 +7,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 @SpringBootTest
 @TestPropertySource("classpath:application.properties")
-public class NaverBookApiServiceTest {
+public class AladinBookApiServiceTest {
 
     @Autowired
-    private NaverBookApiService naverBookApiService;
+    private AladinBookApiService aladinBookApiService;
 
     @Test
-    @DisplayName("유효한 키워드로 네이버 API 호출 시 JSON 응답을 성공적으로 받는다")
-    void NaverApiSuccess() {
+    @DisplayName("API 호출시 json 응답 성공")
+    void aladinSuccess() {
         //given
         String keyword = "개미";
         String resultJson;
         //when
-        resultJson = naverBookApiService.searchBook(keyword);
-        //then
+        resultJson = aladinBookApiService.searchBook(keyword);
         Assertions.assertThat(resultJson).isNotNull();
         Assertions.assertThat(resultJson).contains("개미");
 
         System.out.println(resultJson);
-
     }
 }
