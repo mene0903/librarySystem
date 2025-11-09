@@ -20,7 +20,7 @@ public class AladinApiConfig {
     @Bean
     public WebClient aladinWebClient() {
         return WebClient.builder()
-                .baseUrl("http://www.aladin.co.kr/ttb/api/ItemSearch.aspx")
+                .baseUrl("http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx")
                 .build();
     }
 }
