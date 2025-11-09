@@ -1,5 +1,6 @@
 package com.group.library_system.library_system.api;
 
+import com.group.library_system.library_system.api.dto.NaverResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,20 +17,20 @@ public class NaverBookApiServiceTest {
 
     @Autowired
     private NaverBookApiService naverBookApiService;
+    private NaverResponse response;
 
     @Test
     @DisplayName("유효한 키워드로 네이버 API 호출 시 JSON 응답을 성공적으로 받는다")
     void NaverApiSuccess() {
         //given
         String keyword = "개미";
-        String resultJson;
+        NaverResponse resultJson;
         //when
-        resultJson = naverBookApiService.searchBook(keyword);
+        response = naverBookApiService.searchBook(keyword);
         //then
-        Assertions.assertThat(resultJson).isNotNull();
-        Assertions.assertThat(resultJson).contains("개미");
+        Assertions.assertThat(response).isNotNull();
+        Assertions.assertThat(response.getItems()).isNotEmpty();
 
-        System.out.println(resultJson);
-
+        System.out.println("검색된 첫 번째 책 제목: " + response.getItems().get(0).getTitle());
     }
 }

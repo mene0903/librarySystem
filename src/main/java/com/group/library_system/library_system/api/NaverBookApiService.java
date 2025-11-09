@@ -1,5 +1,6 @@
 package com.group.library_system.library_system.api;
 
+import com.group.library_system.library_system.api.dto.NaverResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class NaverBookApiService {
 
     private final WebClient naverWebClient;
 
-    public String searchBook(String keyword) {
+    public NaverResponse searchBook(String keyword) {
         return naverWebClient.get()
                 // 쿼리 파라미터 설정 (keyword를 URLEncoder.encode 할 필요가 WebClient에서는 없습니다.)
                 .uri(uriBuilder -> uriBuilder
@@ -30,7 +31,7 @@ public class NaverBookApiService {
                 .onStatus(status -> status.isError(), clientResponse -> {
                     throw new RuntimeException("네이버 API 호출 실패: " + clientResponse.statusCode());
                 })
-                .bodyToMono(String.class) // 응답 본문을 문자열로 받습니다.
+                .bodyToMono(NaverResponse.class) // 응답 본문을 문자열로 받습니다.
                 .block(); // 비동기 Mono를 블로킹하여 동기적으로 결과를 얻습니다.    }
     }
 }
