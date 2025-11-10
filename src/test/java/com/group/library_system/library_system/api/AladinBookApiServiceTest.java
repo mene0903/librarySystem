@@ -28,14 +28,14 @@ public class AladinBookApiServiceTest {
         Assertions.assertThat(resultJson.getItem()).isNotEmpty();
 
         System.out.println(resultJson);
-        AladinBookItem book = resultJson.getItem().get(0);
-        System.out.println("Title: " + book.getTitle());
-        System.out.println("Author: " + book.getAuthor());
-        System.out.println("ISBN13: " + book.getIsbn13());
-        System.out.println("CategoryId: " + book.getCategoryId());
-        System.out.println("Publisher: " + book.getPublisher());
-        System.out.println("CustomerReviewRank: " + book.getCustomerReviewRank());
-        System.out.println("ItemPage: " + book.getBookinfo().getItemPage());
-        System.out.println("image: " + book.getCover());
+        AladinBookItem aladinResult = resultJson.getItem().get(0);
+        System.out.println("Title: " + aladinResult.getTitle());
+        System.out.println("Author: " + aladinResult.getAuthor());
+        System.out.println("ISBN13: " + aladinResult.getIsbn13());
+        System.out.println("CategoryId: " + aladinResult.getCategoryId());
+        System.out.println("Publisher: " + aladinResult.getPublisher());
+        System.out.println("CustomerReviewRank: " + aladinResult.getCustomerReviewRank());
+        System.out.println("ItemPage: " + aladinResult.getBookinfo().getItemPage());
+        System.out.println("image: " + aladinResult.getCover());
     }
 }

@@ -1,0 +1,43 @@
+package com.group.library_system.library_system.repository;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDate;
+import java.util.Date;
+
+@Entity(name = "bookSave")
+@Table(name = "book")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Book {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "book_id")
+    private Long bookId;
+
+    @Column(name = "title", length = 255)
+    private String title;
+
+    @Column(name = "author" , length = 255)
+    private String author;
+
+    @Column(name = "genre_id")
+    private int genreId;
+
+    @Column(name = "page_count")
+    private int pageCount;
+
+    @Column(name = "customer_review_rank")
+    private float customerReviewRank;
+
+    @Column(name = "isbn", length = 255)
+    private String isbn;
+
+    @Column(name = "published_year", length = 255)
+    private String publishedYear;
+}
