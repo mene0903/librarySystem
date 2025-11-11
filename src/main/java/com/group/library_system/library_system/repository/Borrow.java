@@ -33,4 +33,7 @@ public class Borrow {
 
     @Column(name = "return_date")
     private LocalDate returnDate;
+
+    @Column(name = "return_date_renew")
+    private int returnDateRenew;
 }
