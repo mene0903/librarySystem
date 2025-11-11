@@ -18,7 +18,7 @@ public class BorrowService {
     private final BorrowRepository borrowRepository;
 
     @Transactional
-    public void saveInfo(String userId, String isbn) throws JsonProcessingException {
+    public void saveBorrow(String userId, String isbn) throws JsonProcessingException {
         User user = userRepository.findById(userId).get();
         bookService.saveBook(isbn);
         Book book = bookRepository.findByIsbn(isbn).get();
@@ -32,5 +32,13 @@ public class BorrowService {
                 .build();
 
         borrowRepository.save(newBorrow);
+    }
+
+    @Transactional
+    public void returnBook(String userId, String isbn) throws JsonProcessingException {
+
+        Borrow borrow = borrowRepository.findByBookIsbn(isbn).get();
+
+        borrowRepository.delete(borrow);
     }
 }

@@ -36,7 +36,7 @@ public class BorrowServiceTest {
         User user = createTestUser("123");
         //when
         userService.registerUser(user);
-        borrowService.saveInfo(user.getId(), "9788937460777");
+        borrowService.saveBorrow(user.getId(), "9788937460777");
         //then
         Assertions.assertThat(borrowRepository.existsByBookIsbn("9788937460777")).isTrue();
     }
@@ -52,13 +52,28 @@ public class BorrowServiceTest {
 
         String isbn = "9788937460777";
 
-        borrowService.saveInfo(user1.getId(), isbn);
+        borrowService.saveBorrow(user1.getId(), isbn);
 
         try {
-            borrowService.saveInfo(user2.getId(), "9788937460777"); // 두 번째 저장 시도
+            borrowService.saveBorrow(user2.getId(), "9788937460777"); // 두 번째 저장 시도
             fail("예외가 발생해야 합니다."); // 예외 안 나오면 테스트 실패
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage()).isEqualTo("이미 대출이 되어있는 책입니다.");
         }
     }
+
+    @Test
+    @DisplayName("책 반납 성공")
+    void returnBookSuccess() throws JsonProcessingException {
+        User user1 = createTestUser("123");
+        userService.registerUser(user1);
+
+        String isbn = "9788937460777";
+        borrowService.saveBorrow(user1.getId(), isbn);
+
+        borrowService.returnBook(user1.getId(), isbn);
+
+        Assertions.assertThat(borrowRepository.existsByBookIsbn(isbn)).isFalse();
+    }
+
 }
