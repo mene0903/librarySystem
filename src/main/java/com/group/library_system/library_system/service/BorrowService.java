@@ -28,7 +28,8 @@ public class BorrowService {
                 .user(user)
                 .book(book)
                 .borrowDate(LocalDate.now())
-                .returnDate(LocalDate.now().plusDays(3))
+                .returnDate(LocalDate.now().plusDays(5))
+                .returnDateRenew(0)
                 .build();
 
         borrowRepository.save(newBorrow);
@@ -40,5 +41,15 @@ public class BorrowService {
         Borrow borrow = borrowRepository.findByBookIsbn(isbn).get();
 
         borrowRepository.delete(borrow);
+    }
+
+    @Transactional
+    public void returnDateRenew(String userId, String isbn) throws JsonProcessingException {
+        Borrow borrow = borrowRepository.findByBookIsbn(isbn).get();
+
+        if(borrow.getReturnDateRenew() == 1) throw new IllegalStateException("이미 연장된 책입니다.");
+
+        borrow.setReturnDate(borrow.getReturnDate().plusDays(5));
+        borrow.setReturnDateRenew(borrow.getReturnDateRenew() + 1);
     }
 }
