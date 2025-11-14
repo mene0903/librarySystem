@@ -37,3 +37,15 @@ public class Borrow {
     @Column(name = "return_date_renew")
     private int returnDateRenew;
 }
+
+
+/*
+borrowCountMean = 0
+borrowMean
+borrowCount = 0
+
+borrowCount += 1
+borrowMean += page / (returnDate - borrowDate)
+borrowCountMean = borrowMean/borrowCount
+
+ */

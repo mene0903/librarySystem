@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,9 +24,6 @@ public class BookService {
     private final NaverBookApiService naverBookApiService;
     private final AladinBookApiService aladinBookApiService;
     private final BookRepository bookRepository;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
 
     public List<NaverBookItem> searchBookForUserSelectionNaver(String keyword) {
         NaverResponse naverResponse = naverBookApiService.searchBook(keyword);
@@ -63,7 +59,7 @@ public class BookService {
                 .bookId(null)
                 .title(item.getTitle())
                 .author(item.getAuthor())
-                .genreId(item.getCategoryId())
+                .categoryId(item.getCategoryId())
                 .pageCount(item.getBookinfo().getItemPage())
                 .customerReviewRank(item.getCustomerReviewRank())
                 .isbn(item.getIsbn13())

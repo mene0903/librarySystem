@@ -28,7 +28,7 @@ public class BorrowServiceTest {
     BorrowService borrowService;
 
     User createTestUser(String id) {
-        return new User(null, "Kim", id, "eee", null, "010-0000", null);
+        return new User(null, "Kim", id, "eee", null, "010-0000", null, 1,1);
     }
 
     @Test
