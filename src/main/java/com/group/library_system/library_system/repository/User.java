@@ -37,6 +37,11 @@ public class User {
     @Column(name = "membership_date", nullable = false)
     private LocalDate membershipDate; // type = date -> LocalDate 사용
 
+    @Column(name = "borrow_count", length = 20)
+    private int borrowCount;
+
+    @Column(name = "borrow_count_mean")
+    private int borrowCountMean;
 
     @PrePersist
         protected void onCreate() {     //날짜 입력값이 null일 경우 현재 날짜로 자동 입력

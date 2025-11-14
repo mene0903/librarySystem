@@ -26,8 +26,8 @@ public class Book {
     @Column(name = "author" , length = 255)
     private String author;
 
-    @Column(name = "genre_id")
-    private int genreId;
+    @Column(name = "category_id")
+    private int categoryId;
 
     @Column(name = "page_count")
     private int pageCount;
@@ -40,4 +40,5 @@ public class Book {
 
     @Column(name = "published_year", length = 255)
     private String publishedYear;
+
 }
