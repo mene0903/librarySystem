@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface BookRecommendRepository extends JpaRepository<BookRecommend, Long> {
-    Optional<BookRecommend> findByUserAndCategoryId(User user,int genreId);
+    Optional<BookRecommend> findByUserAndCategoryId(User user,int categoryId);
 }

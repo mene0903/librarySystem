@@ -24,7 +24,7 @@ public class UserServiceTest {
     private UserRepository userRepository;
 
     private User createTestUser(String id) {
-        return new User(null, "Kim", id, "eee", null, "010-0000", null,0, 3);
+        return new User(null, "Kim", id, "eee", null, "010-0000", null,0,1 ,3);
     }
 
     @Test

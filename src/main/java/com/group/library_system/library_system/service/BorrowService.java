@@ -42,12 +42,15 @@ public class BorrowService {
     @Transactional
     public void returnBook(String userId, String isbn) throws JsonProcessingException {
 
+        User user = userRepository.findById(userId).get();
         Borrow borrow = borrowRepository.findByBookIsbn(isbn).get();
+        Book book = bookRepository.findByIsbn(isbn).get();
 
         bookRecommendService.recommendSave(userId, isbn);
+        bookRecommendService.updateMean(user, isbn);
 
         borrowRepository.delete(borrow);
-        bookRepository.delete(bookRepository.findByIsbn(isbn).get());
+        bookRepository.delete(book);
     }
 
     @Transactional
