@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @Service
@@ -15,6 +16,7 @@ public class BookRecommendService {
 
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
+    private final BorrowRepository borrowRepository;
     private final BookRecommendRepository bookRecommendRepository;
 
     @Transactional
@@ -38,6 +40,27 @@ public class BookRecommendService {
                     .build();
             bookRecommendRepository.save(bookRecommend);
         }
+    }
+
+    @Transactional
+    public void updateMean(User user, String isbn) {
+        Borrow borrow = borrowRepository.findByBookIsbn(isbn).get();
+        Book book = bookRepository.findByIsbn(isbn).get();
+
+        int borrowCount = user.getBorrowCount();
+        int borrowMean = user.getBorrowMean();
+        int borrowCountMean = user.getBorrowCountMean();
+        int pageCount = book.getPageCount();
+
+        long daysBetween = ChronoUnit.DAYS.between(borrow.getBorrowDate(), LocalDate.now());
+        if (daysBetween <= 0) daysBetween = 1;   //대출한 날 반납일 땐 1일로 처리
+
+        borrowMean += (int)(pageCount / (int)daysBetween);
+        borrowCountMean = borrowMean / borrowCount;
+
+        user.setBorrowMean(borrowMean);
+        user.setBorrowCountMean(borrowCountMean);
+
     }
 }
 

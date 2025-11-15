@@ -40,6 +40,9 @@ public class User {
     @Column(name = "borrow_count", length = 20)
     private int borrowCount;
 
+    @Column(name = "borrow_mean" , length = 20)
+    private int borrowMean;
+
     @Column(name = "borrow_count_mean")
     private int borrowCountMean;
 
