@@ -1,7 +1,9 @@
-package com.group.library_system.library_system.repository;
+package com.group.library_system.library_system.service;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.group.library_system.library_system.repository.Book;
+import com.group.library_system.library_system.repository.BookRepository;
 import com.group.library_system.library_system.service.BookService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
