@@ -1,5 +1,7 @@
-package com.group.library_system.library_system.repository;
+package com.group.library_system.library_system.service;
 
+import com.group.library_system.library_system.repository.User;
+import com.group.library_system.library_system.repository.UserRepository;
 import com.group.library_system.library_system.service.UserService;
 import org.assertj.core.api.Assertions;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

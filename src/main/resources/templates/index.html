@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도서관 시스템</title>
+    <style>
+        /* --- CSS Reset & Basic Styles --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans KR', Arial, sans-serif; background-color: #fff; color: #333; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* --- Header --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 2px solid #eee;
+        }
+        .logo { font-size: 24px; font-weight: bold; letter-spacing: -0.5px; color: #2c3e50; }
+        .user-menu { display: flex; gap: 15px; }
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #2c3e50;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            background: #fff;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: #2c3e50; color: #fff; }
+
+        /* --- Container --- */
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+        /* --- Search Bar --- */
+        .search-box {
+            display: flex;
+            margin: 30px 0;
+            border: 2px solid #333;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            font-size: 16px;
+            outline: none;
+        }
+        .search-box button {
+            padding: 0 30px;
+            background: #ddd;
+            border: none;
+            border-left: 2px solid #333;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .search-box button:hover { background: #ccc; }
+
+        /* --- System Notice --- */
+        .notice-bar {
+            background-color: #f0f0f0;
+            padding: 10px 15px;
+            margin-bottom: 40px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            color: #555;
+        }
+        .notice-label { font-weight: bold; color: #333; margin-right: 10px; }
+
+        /* --- Section Common --- */
+        section { margin-bottom: 60px; }
+        h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        h2 span {
+            font-size: 14px;
+            color: #777;
+            text-transform: none;
+            margin-left: 10px;
+            font-weight: normal;
+        }
+
+        /* --- Book Grid --- */
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 30px;
+        }
+        .book-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            background: #fff;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .book-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        .book-img-placeholder {
+            width: 100%;
+            height: 250px;
+            background-color: #eee;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            overflow: hidden;
+        }
+        .book-img-placeholder img { width: 100%; height: 100%; object-fit: cover; }
+        .book-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .book-author { font-size: 13px; color: #666; }
+
+        /* =========================================
+           [모달(Modal) 스타일 추가]
+           ========================================= */
+        .modal-overlay {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 반투명 검은 배경 */
+            z-index: 1000; /* 맨 위에 표시 */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-window {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        .close-modal:hover { color: #333; }
+
+        /* 아까 만든 로그인 폼 스타일 (모달 내부용) */
+        .login-title { text-align: center; font-size: 24px; font-weight: bold; color: #2c3e50; margin-bottom: 30px; }
+        .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .input-field { width: 100%; height: 45px; padding: 10px 15px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+        .input-field:focus { border-color: #3498db; outline: none; }
+        .login-submit-btn { width: 100%; height: 45px; background-color: #2c3e50; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .login-submit-btn:hover { background-color: #1a252f; }
+        .modal-links { margin-top: 20px; text-align: center; font-size: 13px; color: #666; }
+        .modal-links a { color: #666; margin: 0 8px; }
+        .modal-links span { color: #ddd; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">Library Logo</div>
+    <div class="user-menu">
+        <button onclick="openLoginModal()" class="btn">LOGIN</button>
+    </div>
+</header>
+
+<div class="container">
+    <form action="/search" method="get" class="search-box">
+        <input type="text" name="keyword" placeholder="Search books...">
+        <button type="submit">🔍 Search</button>
+    </form>
+
+    <div class="notice-bar">
+        <span class="notice-label">SYSTEM NOTICE:</span> Holiday Hours
+    </div>
+
+    <section>
+        <h2>RECOMMENDED FOR YOU <span>(Based on loans)</span></h2>
+        <div class="book-grid">
+            <div class="book-card" th:each="book : ${recommendList}">
+                <div class="book-img-placeholder">
+                    <img th:if="${book.cover}" th:src="${book.cover}" alt="표지">
+                    <span th:unless="${book.cover}">No Image</span>
+                </div>
+                <div class="book-title" th:text="${book.title}">책 제목</div>
+                <div class="book-author" th:text="${book.author}">작가 이름</div>
+            </div>
+            <div class="book-card" th:if="${recommendList == null or #lists.isEmpty(recommendList)}">
+                <div class="book-img-placeholder">Example</div>
+                <div class="book-title">데이터 없음</div>
+                <div class="book-author">추천 시스템 준비중</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>NEW ARRIVALS</h2>
+        <div class="book-grid">
+            <div class="book-card">
+                <div class="book-img-placeholder">New 1</div>
+                <div class="book-title">신간 도서 1</div>
+                <div class="book-author">작가 A</div>
+            </div>
+            <div class="book-card">
+                <div class="book-img-placeholder">New 2</div>
+                <div class="book-title">신간 도서 2</div>
+                <div class="book-author">작가 B</div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="loginModal" class="modal-overlay" onclick="closeLoginModal(event)">
+    <div class="modal-window">
+        <span class="close-modal" onclick="forceCloseModal()">&times;</span>
+
+        <div class="login-title">LOGIN</div>
+
+        <form action="/login" method="post">
+            <div class="input-group">
+                <input type="text" name="username" class="input-field" placeholder="아이디" required>
+                <input type="password" name="password" class="input-field" placeholder="비밀번호" required>
+            </div>
+            <button type="submit" class="login-submit-btn">로그인</button>
+        </form>
+
+        <div class="modal-links">
+            <a href="#">아이디 찾기</a>
+            <span>|</span>
+            <a href="#">비밀번호 찾기</a>
+            <span>|</span>
+            <a href="/signup" style="color: #3498db; font-weight: bold;">회원가입</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 모달 열기 함수
+    function openLoginModal() {
+        const modal = document.getElementById('loginModal');
+        modal.style.display = 'flex'; // 화면에 보이게 설정 (flex로 중앙 정렬)
+    }
+
+    // 모달 닫기 함수 (배경 클릭 시)
+    function closeLoginModal(event) {
+        const modal = document.getElementById('loginModal');
+        // 클릭된 요소(event.target)가 모달 배경(overlay)일 때만 닫기
+        // (창 내부를 클릭했을 때는 닫히면 안 됨)
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // X 버튼 눌러서 닫기
+    function forceCloseModal() {
+        document.getElementById('loginModal').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.Arrays;
 import java.util.List;
 
 @SpringBootTest
@@ -46,7 +48,7 @@ public class AladinBookApiServiceTest {
         //given
         AladinResponse resultJson;
         //when
-        resultJson = aladinBookApiService.searchRatingBook("6734");
+        resultJson = aladinBookApiService.searchRatingBook(6734 , 1, 100);
         //then
         Assertions.assertThat(resultJson).isNotNull();
         Assertions.assertThat(resultJson.getItem()).isNotEmpty();
@@ -60,6 +62,47 @@ public class AladinBookApiServiceTest {
         System.out.println("Publisher: " + aladinResult.getPublisher());
         System.out.println("CustomerReviewRank: " + aladinResult.getCustomerReviewRank());
         System.out.println("image: " + aladinResult.getCover());
+    }
+
+    @Test
+    @DisplayName("aladin bestSeller 호출 성공")
+    void bestSellerSuccess() throws JsonProcessingException {
+        //given
+        AladinResponse aladinResponse;
+        //when
+        aladinResponse = aladinBookApiService.searchBestSeller();
+        //then
+        Assertions.assertThat(aladinResponse).isNotNull();
+        Assertions.assertThat(aladinResponse.getItem()).isNotEmpty();
+
+        AladinBookItem aladinBookItem = aladinResponse.getItem().get(0);
+        System.out.println("Title: " + aladinBookItem.getTitle());
+        System.out.println("Author: " + aladinBookItem.getAuthor());
+        System.out.println("ISBN13: " + aladinBookItem.getIsbn13());
+        System.out.println("CategoryId: " + aladinBookItem.getCategoryId());
+        System.out.println("Publisher: " + aladinBookItem.getPublisher());
+        System.out.println("CustomerReviewRank: " + aladinBookItem.getCustomerReviewRank());
+        System.out.println("image: " + aladinBookItem.getCover());
+    }
+
+    @Test
+    @DisplayName("aladin isbn 검색 호출 성공")
+    void searchIsbnSuccess() throws JsonProcessingException {
+        //given
+        List<String> testIsbns = Arrays.asList(
+                "9788937460777",
+                "9791170526643",
+                "9791138441285",
+                "9791193937990",
+                "9791168342941"
+        );
+        //when
+        AladinResponse aladinResponse = aladinBookApiService.lookupBooksByIsbn(testIsbns);
+        //then
+        Assertions.assertThat(aladinResponse).isNotNull();
+        AladinBookItem aladinBookItem = aladinResponse.getItem().get(0);
+        System.out.println(aladinBookItem.getTitle());
+        System.out.println(aladinBookItem.getAuthor());
 
     }
 }
