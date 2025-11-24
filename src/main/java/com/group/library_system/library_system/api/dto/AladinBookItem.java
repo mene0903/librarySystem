@@ -16,8 +16,11 @@ import java.time.LocalDate;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AladinBookItem {
 
+    @JsonAlias({"isbn", "isbn13", "ISBN", "ISBN13"})
     private String isbn13;     //isbn
+    @JsonAlias({"Title", "title"})
     private String title;
+    @JsonAlias({"Author", "author"})
     private String author;
 
     @JsonProperty(value = "categoryId")
@@ -25,10 +28,12 @@ public class AladinBookItem {
     private int categoryId; //genreId
     private float customerReviewRank;
     private String publisher;
+    @JsonAlias({"Cover", "cover"})
     private String cover;      // ✅ 수정 완료: 최상위 레벨로 이동
     private String pubDate;
     private String description;  // ✅ 추가
 
+    @JsonAlias("subInfo")
     private BookInfo bookinfo;
 
     @Getter

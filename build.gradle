@@ -44,6 +44,18 @@ dependencies {
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 }
 
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test) {
+	systemProperty 'file.encoding', 'UTF-8'
+}
+
+bootRun {
+	systemProperty 'file.encoding', 'UTF-8'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 	jvmArgs += [

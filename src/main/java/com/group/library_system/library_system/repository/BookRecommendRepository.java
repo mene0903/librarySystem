@@ -8,4 +8,6 @@ public interface BookRecommendRepository extends JpaRepository<BookRecommend, Lo
     Optional<BookRecommend> findByUserAndCategoryId(User user,int categoryId);
 
     Optional<BookRecommend> findTopByUserOrderByCategoryCountDesc(User user);
+
+    boolean existsByUser(User user);
 }
