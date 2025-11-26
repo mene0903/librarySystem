@@ -41,4 +41,10 @@ public class Book {
     @Column(name = "published_year", length = 255)
     private String publishedYear;
 
+    @Column(name = "book_image", length = 255)
+    private String bookImage;
+
+    @Column(name = "return_date")
+    private LocalDate returnDate;
+
 }

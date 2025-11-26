@@ -36,10 +36,15 @@ public class AladinBookItem {
     @JsonAlias("subInfo")
     private BookInfo bookinfo;
 
+    private String returnDate; // 반납 예정일
+    private String loanDate;   // 대출일
+
     @Getter
     @Setter
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class BookInfo  {
         private int itemPage;
     }
+
+
 }

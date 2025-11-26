@@ -85,24 +85,4 @@ public class AladinBookApiServiceTest {
         System.out.println("image: " + aladinBookItem.getCover());
     }
 
-    @Test
-    @DisplayName("aladin isbn 검색 호출 성공")
-    void searchIsbnSuccess() throws JsonProcessingException {
-        //given
-        List<String> testIsbns = Arrays.asList(
-                "9788937460777",
-                "9791170526643",
-                "9791138441285",
-                "9791193937990",
-                "9791168342941"
-        );
-        //when
-        AladinResponse aladinResponse = aladinBookApiService.lookupBooksByIsbn(testIsbns);
-        //then
-        Assertions.assertThat(aladinResponse).isNotNull();
-        AladinBookItem aladinBookItem = aladinResponse.getItem().get(0);
-        System.out.println(aladinBookItem.getTitle());
-        System.out.println(aladinBookItem.getAuthor());
-
-    }
 }

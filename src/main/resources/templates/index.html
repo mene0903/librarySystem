@@ -12,8 +12,8 @@
 
         /* --- Theme Colors --- */
         :root {
-            --main-color: #2c3e50; /* 진한 네이비 */
-            --accent-color: #3498db; /* 밝은 블루 */
+            --main-color: #2c3e50;
+            --accent-color: #3498db;
             --bg-color: #f5f7fa;
         }
 
@@ -47,7 +47,6 @@
         /* --- Book Grid --- */
         .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px; }
 
-        /* 책 카드 스타일 (클릭 가능하도록 변경) */
         .book-card {
             border: 1px solid #ccc; padding: 15px; background: #fff; text-align: center;
             transition: transform 0.2s; cursor: pointer;
@@ -59,9 +58,7 @@
         .book-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .book-author { font-size: 13px; color: #666; }
 
-        /* =========================================
-           [모달(Modal) 공통 스타일]
-           ========================================= */
+        /* --- Modal Styles --- */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.6); z-index: 1000;
@@ -77,7 +74,6 @@
         }
         .close-modal:hover { color: var(--main-color); }
 
-        /* --- 로그인 모달 스타일 --- */
         #loginModal .modal-window { padding: 40px; width: 90%; max-width: 380px; }
         .login-title { text-align: center; font-size: 24px; font-weight: bold; color: var(--main-color); margin-bottom: 30px; }
         .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
@@ -85,31 +81,19 @@
         .login-submit-btn { width: 100%; height: 45px; background-color: var(--main-color); color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; }
         .modal-links { margin-top: 20px; text-align: center; font-size: 13px; color: #666; }
 
-        /* --- 책 상세 정보 모달 스타일 --- */
-        #bookDetailModal .modal-window {
-            width: 800px; max-width: 90%; display: flex; flex-direction: row; min-height: 400px;
-        }
-        .bd-cover-area {
-            width: 40%; background-color: #f8f8f8; display: flex;
-            justify-content: center; align-items: center; padding: 20px;
-        }
+        #bookDetailModal .modal-window { width: 800px; max-width: 90%; display: flex; flex-direction: row; min-height: 400px; }
+        .bd-cover-area { width: 40%; background-color: #f8f8f8; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .bd-cover-area img { width: 100%; max-width: 200px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .bd-info-area {
-            width: 60%; padding: 40px 30px; display: flex; flex-direction: column;
-        }
+        .bd-info-area { width: 60%; padding: 40px 30px; display: flex; flex-direction: column; }
         .bd-title { font-size: 22px; font-weight: bold; margin-bottom: 10px; color: var(--main-color); line-height: 1.3;}
         .bd-meta { font-size: 14px; color: #666; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .bd-meta span { margin-right: 10px; }
+        .bd-meta span { margin-right: 5px; }
+        .bd-rank { color: #f39c12; font-weight: bold; margin-left: 5px; }
         .bd-desc { font-size: 14px; color: #444; line-height: 1.6; flex: 1; overflow-y: auto; max-height: 200px; margin-bottom: 20px; }
         .bd-btn-group { margin-top: auto; }
-        .loan-btn {
-            width: 100%; padding: 15px; background-color: var(--accent-color); color: #fff;
-            border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;
-            transition: background-color 0.2s;
-        }
+        .loan-btn { width: 100%; padding: 15px; background-color: var(--accent-color); color: #fff; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
         .loan-btn:hover { background-color: #2980b9; }
 
-        /* 반응형: 모바일에서는 상세 모달 세로 배치 */
         @media (max-width: 700px) {
             #bookDetailModal .modal-window { flex-direction: column; overflow-y: auto; height: 90%; }
             .bd-cover-area { width: 100%; height: 250px; }
@@ -123,11 +107,9 @@
 <header>
     <div class="logo" onclick="location.href='/'">LIBRARY SYSTEM</div>
     <div class="user-menu">
-        <!-- 로그인 안 되어 있을 때 -->
         <th:block th:if="${session.loginUser == null}">
             <button onclick="openLoginModal()" class="btn">LOGIN</button>
         </th:block>
-        <!-- 로그인 되어 있을 때 -->
         <th:block th:if="${session.loginUser != null}">
             <span th:text="${session.loginUser.name} + '님'" style="align-self: center; font-weight: bold; margin-right: 10px;"></span>
             <a href="/mypage" class="btn">MY INFO</a>
@@ -149,10 +131,6 @@
     <section>
         <h2 th:text="${sectionTitle}">베스트셀러 / 추천 도서</h2>
         <div class="book-grid">
-            <!--
-                책 카드 클릭 시 openBookDetail() 호출
-                data-* 속성을 통해 책 정보를 HTML 요소에 심어둠
-            -->
             <div th:each="book : ${recommendList}" class="book-card"
                  onclick="openBookDetail(this)"
                  th:attr="data-isbn=${book.isbn13},
@@ -161,7 +139,8 @@
                           data-publisher=${book.publisher},
                           data-pubdate=${book.pubDate},
                           data-description=${book.description},
-                          data-cover=${book.cover}">
+                          data-cover=${book.cover},
+                          data-rank=${book.customerReviewRank}">
 
                 <div class="book-img-placeholder">
                     <img th:if="${book.cover}" th:src="${book.cover}" alt="표지">
@@ -171,7 +150,6 @@
                 <div class="book-author" th:text="${book.author}">작가 이름</div>
             </div>
 
-            <!-- 목록 없음 처리 -->
             <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #f9f9f9; border-radius: 8px;"
                  th:if="${#lists.isEmpty(recommendList)}">
                 <h3>📚 목록을 불러올 수 없습니다.</h3>
@@ -181,9 +159,6 @@
     </section>
 </div>
 
-<!-- =========================================
-     1. 로그인 모달 (Login Modal)
-     ========================================= -->
 <div id="loginModal" class="modal-overlay" onclick="closeLoginModal(event)">
     <div class="modal-window">
         <span class="close-modal" onclick="forceCloseLoginModal()">&times;</span>
@@ -201,32 +176,26 @@
     </div>
 </div>
 
-<!-- =========================================
-     2. 책 상세 모달 (Book Detail Modal)
-     ========================================= -->
 <div id="bookDetailModal" class="modal-overlay" onclick="closeBookDetailModal(event)">
     <div class="modal-window">
         <span class="close-modal" onclick="forceCloseBookDetailModal()">&times;</span>
-
-        <!-- 왼쪽: 커버 이미지 -->
         <div class="bd-cover-area">
             <img id="modalCover" src="" alt="Book Cover">
         </div>
-
-        <!-- 오른쪽: 정보 및 대출 버튼 -->
         <div class="bd-info-area">
             <h3 id="modalTitle" class="bd-title">책 제목</h3>
             <div class="bd-meta">
                 <span id="modalAuthor">저자</span> |
                 <span id="modalPublisher">출판사</span> |
                 <span id="modalPubDate">출판일</span>
+                <span id="modalRankArea" style="display:none;">
+                     | <span id="modalRank" class="bd-rank"></span>
+                </span>
             </div>
             <div id="modalDescription" class="bd-desc">
                 책 설명이 들어가는 곳입니다...
             </div>
-
             <div class="bd-btn-group">
-                <!-- AJAX 사용을 위해 form 제거하고 input만 유지 -->
                 <input type="hidden" id="modalIsbnInput">
                 <button class="loan-btn" onclick="handleLoan()">대출하기</button>
             </div>
@@ -234,16 +203,9 @@
     </div>
 </div>
 
-
 <script th:inline="javascript">
-    /* =========================================
-       [전역 변수 설정]
-       ========================================= */
     const IS_LOGGED_IN = [[${session.loginUser != null}]];
 
-    /* =========================================
-       [모달 공통 함수]
-       ========================================= */
     function openElement(id) { document.getElementById(id).style.display = 'flex'; }
     function closeElement(event, id) {
         if (event.target === document.getElementById(id)) {
@@ -252,19 +214,14 @@
     }
     function forceCloseElement(id) { document.getElementById(id).style.display = 'none'; }
 
-    /* 로그인 모달 제어 */
     function openLoginModal() { openElement('loginModal'); }
     function closeLoginModal(e) { closeElement(e, 'loginModal'); }
     function forceCloseLoginModal() { forceCloseElement('loginModal'); }
 
-    /* 책 상세 모달 제어 */
     function openBookDetailModal() { openElement('bookDetailModal'); }
     function closeBookDetailModal(e) { closeElement(e, 'bookDetailModal'); }
     function forceCloseBookDetailModal() { forceCloseElement('bookDetailModal'); }
 
-    /* =========================================
-       [책 상세 정보 로직]
-       ========================================= */
     function openBookDetail(element) {
         const title = element.getAttribute('data-title');
         const author = element.getAttribute('data-author');
@@ -273,11 +230,23 @@
         const description = element.getAttribute('data-description');
         const cover = element.getAttribute('data-cover');
         const isbn = element.getAttribute('data-isbn');
+        const rank = element.getAttribute('data-rank');
 
         document.getElementById('modalTitle').innerText = title;
         document.getElementById('modalAuthor').innerText = author;
         document.getElementById('modalPublisher').innerText = publisher;
         document.getElementById('modalPubDate').innerText = pubDate;
+
+        const rankArea = document.getElementById('modalRankArea');
+        const rankText = document.getElementById('modalRank');
+
+        if (rank && parseFloat(rank) > 0) {
+            rankText.innerText = '⭐ ' + rank;
+            rankArea.style.display = 'inline';
+        } else {
+            rankArea.style.display = 'none';
+        }
+
         document.getElementById('modalDescription').innerText = description ? description : "상세 설명이 없습니다.";
 
         const imgElem = document.getElementById('modalCover');
@@ -286,51 +255,31 @@
         } else {
             imgElem.src = 'https://via.placeholder.com/200x300?text=No+Image';
         }
-
-        // ISBN 설정 (대출 시 사용)
         document.getElementById('modalIsbnInput').value = isbn;
-
         openBookDetailModal();
     }
 
-    /* =========================================
-       [대출 버튼 핸들러 (AJAX fetch 사용)]
-       ========================================= */
     function handleLoan() {
-        // 1. 로그인 여부 체크
         if (!IS_LOGGED_IN) {
             alert('로그인이 필요한 서비스입니다.\n로그인 해주세요.');
             forceCloseBookDetailModal();
             openLoginModal();
             return;
         }
-
-        // 2. 대출 확인
-        if (!confirm('이 책을 대출하시겠습니까?')) {
-            return;
-        }
+        if (!confirm('이 책을 대출하시겠습니까?')) return;
 
         const isbn = document.getElementById('modalIsbnInput').value;
-
-        // 3. fetch API로 비동기 요청 전송
         fetch('/loan', {
             method: 'POST',
-            headers: {
-                // Controller가 @RequestParam으로 받으므로 form-urlencoded 형식 사용
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'isbn=' + encodeURIComponent(isbn)
         })
-        .then(response => response.json()) // 서버 응답을 JSON으로 파싱
+        .then(response => response.json())
         .then(data => {
-            console.log("서버 응답:", data); // 브라우저 콘솔에서 확인 가능
-
             if (data.success) {
-                // 성공 시 메시지 출력 후 새로고침
                 alert(data.message);
                 location.reload();
             } else {
-                // 실패 시 메시지만 출력 (새로고침 X)
                 alert(data.message);
             }
         })
@@ -341,13 +290,28 @@
     }
 
     /* =========================================
-       [페이지 로드 이벤트]
+       [수정] 페이지 로드 시 이벤트 처리 (로그인 에러 포함)
        ========================================= */
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
+
+        // 1. 회원가입 성공 처리
         if (urlParams.has('signupSuccess')) {
             alert('회원가입이 완료되었습니다! 바로 로그인해 주세요.');
             openLoginModal();
+            history.replaceState({}, null, location.pathname);
+        }
+
+        // 2. 메시지 처리
+        if (urlParams.has('message')) {
+            alert(urlParams.get('message'));
+            history.replaceState({}, null, location.pathname);
+        }
+
+        // 3. [NEW] 로그인 실패 에러 처리
+        if (urlParams.has('loginError')) {
+            alert('아이디 또는 비밀번호가 일치하지 않습니다.');
+            openLoginModal(); // 로그인 모달 다시 띄워줌 (사용자 편의)
             history.replaceState({}, null, location.pathname);
         }
     };
@@ -355,3 +319,4 @@
 
 </body>
 </html>
+

@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static com.jayway.jsonpath.internal.path.PathCompiler.fail;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -123,5 +124,28 @@ public class BorrowServiceTest {
             assertThat(e.getMessage()).isEqualTo("이미 연장된 책입니다.");
         }
     }
+
+    @Test
+    @DisplayName("사용자가 빌린 책 리스트 반납 성공")
+    void UserBookBorrowList() throws JsonProcessingException {
+
+        //given
+        User user = createTestUser("123");
+        userService.registerUser(user);
+
+        //when
+        borrowService.saveBorrow(user.getId(), "9791168342941");
+        borrowService.saveBorrow(user.getId(), "9791141173500");
+        borrowService.saveBorrow(user.getId(), "9791142335211");
+        List<Borrow> borrows = borrowService.listUserBookRecommend(user);
+
+        //then
+        Assertions.assertThat(borrows).isNotEmpty();
+
+        for(int i=0; i<borrows.size(); i++) {
+            System.out.println(borrows.get(i));
+        }
+    }
+
 
 }

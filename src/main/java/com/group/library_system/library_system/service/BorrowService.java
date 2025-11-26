@@ -8,7 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -56,10 +57,23 @@ public class BorrowService {
     @Transactional
     public void returnDateRenew(String userId, String isbn) throws JsonProcessingException {
         Borrow borrow = borrowRepository.findByBookIsbn(isbn).get();
+        Book book = bookRepository.findById(borrow.getBook().getBookId()).get();
 
         if(borrow.getReturnDateRenew() == 1) throw new IllegalStateException("이미 연장된 책입니다.");
 
-        borrow.setReturnDate(borrow.getReturnDate().plusDays(5));
+        borrow.setReturnDate(borrow.getReturnDate().plusDays(3));
         borrow.setReturnDateRenew(borrow.getReturnDateRenew() + 1);
+
+        book.setReturnDate(borrow.getReturnDate());
+    }
+
+    @Transactional
+    public List<Borrow> listUserBookRecommend(User user) {
+        return borrowRepository.findAllByUser(user);
+    }
+
+    @Transactional
+    public List<Borrow> findUserBorrowList(User user) {
+        return borrowRepository.findAllByUser(user);
     }
 }

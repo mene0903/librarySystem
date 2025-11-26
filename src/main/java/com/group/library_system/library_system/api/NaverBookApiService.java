@@ -24,8 +24,8 @@ public class NaverBookApiService {
         return naverWebClient.get()
                 // 쿼리 파라미터 설정 (keyword를 URLEncoder.encode 할 필요가 WebClient에서는 없습니다.)
                 .uri(uriBuilder -> uriBuilder
-                        .queryParam("d_titl", keyword)
-                        .queryParam("display", 10)
+                        .queryParam("query", keyword)
+                        .queryParam("display", 30)
                         .build())
                 .retrieve()
                 .onStatus(status -> status.isError(), clientResponse -> {

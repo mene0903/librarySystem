@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Library My Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- 기본 스타일 (유지) --- */
+        body { margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: #333; }
+
+        /* --- Header Style (유지) --- */
+        .custom-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background-color: #fff; }
+        .header-logo { font-size: 24px; font-weight: 700; color: #1e4b75; text-decoration: none; letter-spacing: -0.5px; }
+        .header-menu { display: flex; align-items: center; gap: 10px; }
+        .header-username { font-weight: 600; font-size: 16px; color: #333; margin-right: 15px; }
+        .header-btn { background: #fff; border: 1px solid #333; border-radius: 4px; padding: 6px 16px; font-size: 13px; font-weight: 700; color: #1e4b75; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-block; }
+        .header-btn:hover { background-color: #f8f9fa; }
+
+        /* --- Layout & List (유지) --- */
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .profile-card { background: #f8f9fa; padding: 30px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .profile-info { display: flex; align-items: center; gap: 20px; }
+        .profile-avatar { width: 60px; height: 60px; background: #e1e7ef; color: #1e4b75; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; }
+        .profile-text h1 { margin: 0; font-size: 22px; color: #333; }
+        .profile-text p { margin: 5px 0 0 0; color: #666; font-size: 14px; }
+        .edit-btn { padding: 10px 20px; background: #1e4b75; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .edit-btn:hover { background: #163a5c; }
+        .section-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #111; border-left: 4px solid #1e4b75; padding-left: 12px; }
+        .loan-list { display: flex; flex-direction: column; gap: 20px; }
+        .loan-item { background: white; padding: 20px; border: 1px solid #eee; border-radius: 8px; display: flex; align-items: flex-start; gap: 20px; }
+        .book-cover { width: 80px; height: 120px; object-fit: cover; background: #eee; border: 1px solid #ddd; flex-shrink: 0; }
+        .book-info { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: 5px; }
+        .book-title { font-size: 18px; font-weight: 700; margin-bottom: 5px; color: #111; }
+        .book-author { font-size: 14px; color: #666; margin-bottom: 10px; }
+        .book-dates { font-size: 13px; color: #555; background: #f9f9f9; padding: 8px; border-radius: 4px; display: inline-block; }
+        .date-label { font-weight: 600; margin-right: 5px; }
+        .action-btns { align-self: center; display: flex; flex-direction: column; gap: 8px; }
+        .action-btn { width: 80px; padding: 8px 0; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; border: 1px solid #333; }
+        .renew-btn { background: #fff; color: #333; }
+        .renew-btn:hover { background: #f0f0f0; }
+        .return-btn { background: #dc2626; color: white; border-color: #dc2626; }
+        .return-btn:hover { background: #b91c1c; }
+
+        /* --- Modal Styles --- */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-window { width: 400px; background: white; padding: 30px; border-radius: 12px; position: relative; }
+        .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; }
+        .form-group { margin-bottom: 15px; }
+        .form-label { font-size: 13px; font-weight: 600; margin-bottom: 5px; display: block; }
+        .form-input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; }
+        .save-btn { width: 100%; padding: 12px; background: #1e4b75; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .delete-link { margin-top: 15px; text-align: center; font-size: 12px; color: #dc2626; cursor: pointer; text-decoration: underline; }
+
+        /* [추가] 비밀번호 토글 관련 스타일 */
+        .pw-toggle-link {
+            font-size: 13px; color: #666; text-decoration: underline; cursor: pointer;
+            display: inline-block; margin-bottom: 15px; background: none; border: none; padding: 0;
+        }
+        .pw-toggle-link:hover { color: #333; }
+
+        #passwordSection {
+            background-color: #f9f9f9; padding: 15px; border-radius: 8px;
+            margin-bottom: 15px; border: 1px solid #eee; display: none;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<header class="custom-header">
+    <a href="/" class="header-logo">LIBRARY SYSTEM</a>
+    <div class="header-menu">
+        <span class="header-username">
+            <span th:text="${session.loginUser.name}">db</span>님
+        </span>
+        <a href="/" class="header-btn">HOME</a>
+        <a href="/logout" class="header-btn">LOGOUT</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="profile-card">
+        <div class="profile-info">
+            <div class="profile-avatar">
+                <span th:text="${#strings.substring(session.loginUser.name, 0, 1)}">U</span>
+            </div>
+            <div class="profile-text">
+                <h1>myPage</h1>
+                <p>환영합니다, <span th:text="${session.loginUser.name}">User</span>님!</p>
+            </div>
+        </div>
+        <button class="edit-btn" onclick="openEditModal()">내 정보 수정</button>
+    </div>
+
+    <div class="section-title">현재 대출중인 도서</div>
+    <div class="loan-list">
+        <div th:each="book : ${borrowedList}" class="loan-item">
+            <img th:src="${book.cover}" class="book-cover" th:alt="${book.title}" />
+            <div class="book-info">
+                <div class="book-title" th:text="${book.title}">책 제목</div>
+                <div class="book-author" th:text="${book.author}">저자</div>
+                <div class="book-dates">
+                    <div><span class="date-label">반납 예정일:</span><span th:text="${book.returnDate}">-</span></div>
+                    <div style="margin-top: 4px;"><span class="date-label">대출일:</span><span th:text="${book.loanDate}">-</span></div>
+                </div>
+            </div>
+            <div class="action-btns">
+                <button class="action-btn renew-btn" th:data-isbn="${book.isbn13}" onclick="handleRenew(this.dataset.isbn)">연장</button>
+                <button class="action-btn return-btn" th:data-isbn="${book.isbn13}" onclick="handleReturn(this.dataset.isbn)">반납</button>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(borrowedList)}" style="text-align: center; padding: 40px; color: #999;">
+            대출 중인 도서가 없습니다.
+        </div>
+    </div>
+</div>
+
+<div id="editModal" class="modal-overlay">
+    <div class="modal-window">
+        <span class="close-modal" onclick="closeEditModal()">&times;</span>
+        <h3 style="margin-top: 0; margin-bottom: 20px;">회원 정보 수정</h3>
+
+        <form action="/user/update" method="post">
+            <div class="form-group">
+                <label class="form-label">ID</label>
+                <input type="text" name="id" class="form-input" th:value="${session.loginUser.id}" readonly style="background: #f5f5f5; color:#888;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" class="form-input" th:value="${session.loginUser.name}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="text" name="phoneNumber" class="form-input" th:value="${session.loginUser.phoneNumber}">
+            </div>
+
+            <div style="text-align: right;">
+                <button type="button" class="pw-toggle-link" onclick="togglePasswordSection()">🔒 비밀번호 변경</button>
+            </div>
+
+            <div id="passwordSection">
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" name="password" class="form-input"
+                           id="pwInput" placeholder="새로운 비밀번호 입력"
+                           onkeyup="checkPasswordMatch()">
+                </div>
+
+                <div class="form-group" style="margin-top: 10px; margin-bottom: 0;">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" class="form-input"
+                           id="pwConfirmInput" placeholder="비밀번호 재입력"
+                           onkeyup="checkPasswordMatch()">
+
+                    <p id="pwMatchMsg" style="font-size: 12px; margin-top: 5px; min-height: 18px;"></p>
+                    <p style="font-size: 11px; color: #999; margin-top: 5px;">* 입력하지 않으면 기존 비밀번호가 유지됩니다.</p>
+                </div>
+            </div>
+
+            <button id="saveBtn" class="save-btn" type="submit">저장하기</button>
+        </form>
+
+        <div class="delete-link" onclick="confirmDelete()">회원 탈퇴</div>
+        <form id="deleteForm" action="/user/delete" method="post" style="display:none;">
+            <input type="hidden" name="id" th:value="${session.loginUser.id}">
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error')) { alert(urlParams.get('error')); history.replaceState({}, null, location.pathname); }
+        if (urlParams.get('message')) { alert(urlParams.get('message')); history.replaceState({}, null, location.pathname); }
+        if (urlParams.get('updateSuccess')) { alert("정보 수정 완료"); history.replaceState({}, null, location.pathname); }
+    });
+
+    function openEditModal() { document.getElementById('editModal').style.display = 'flex'; }
+
+    // [수정] 모달 닫을 때 비밀번호 창 초기화
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+        document.getElementById('passwordSection').style.display = 'none';
+        document.getElementById('pwInput').value = '';
+    }
+
+    // [추가] 비밀번호 토글 함수
+    function togglePasswordSection() {
+        const section = document.getElementById('passwordSection');
+        const input = document.getElementById('pwInput');
+        if (section.style.display === 'none') {
+            section.style.display = 'block';
+            input.focus();
+        } else {
+            section.style.display = 'none';
+            input.value = '';
+        }
+    }
+
+    function handleRenew(isbn) {
+        if(!confirm("연장하시겠습니까? (5일 연장)")) return;
+        fetch('/renew', {
+            method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ isbn: isbn })
+        }).then(res => res.json()).then(data => {
+            alert(data.message); if(data.success) location.reload();
+        }).catch(err => alert("통신 오류"));
+    }
+
+    function handleReturn(isbn) {
+        if(!confirm("반납하시겠습니까?")) return;
+        fetch('/return', {
+            method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ isbn: isbn })
+        }).then(res => res.json()).then(data => {
+            alert(data.message); if(data.success) location.reload();
+        }).catch(err => alert("통신 오류"));
+    }
+
+    function confirmDelete() {
+        if(confirm("정말 탈퇴하시겠습니까?")) document.getElementById('deleteForm').submit();
+    }
+
+    function checkPasswordMatch() {
+    const pw = document.getElementById('pwInput').value;
+    const pwConfirm = document.getElementById('pwConfirmInput').value;
+    const msg = document.getElementById('pwMatchMsg');
+    const saveBtn = document.getElementById('saveBtn');
+
+    // 1. 둘 다 비어있으면 (비밀번호 변경 안 함) -> 통과
+    if (pw === "" && pwConfirm === "") {
+        msg.innerText = "";
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = 1;
+        return;
+    }
+
+    // 2. 비밀번호 입력 중인데 확인란이 비었으면 -> 대기
+    if (pw !== "" && pwConfirm === "") {
+        msg.innerText = "비밀번호 확인을 입력해주세요.";
+        msg.style.color = "#666";
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = 0.5; // 버튼 흐리게
+        return;
+    }
+
+    // 3. 일치 여부 검사
+    if (pw === pwConfirm) {
+        msg.innerText = "비밀번호가 일치합니다. ✔️";
+        msg.style.color = "green";
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = 1;
+    } else {
+        msg.innerText = "비밀번호가 일치하지 않습니다. ❌";
+        msg.style.color = "red";
+        saveBtn.disabled = true; // 저장 버튼 비활성화
+        saveBtn.style.opacity = 0.5;
+    }
+}
+
+// [수정] 모달 닫을 때 초기화 로직에 추가
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+    document.getElementById('passwordSection').style.display = 'none';
+
+    // 입력값 및 메시지 초기화
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwConfirmInput').value = '';
+    document.getElementById('pwMatchMsg').innerText = '';
+    document.getElementById('saveBtn').disabled = false;
+    document.getElementById('saveBtn').style.opacity = 1;
+}
+</script>
+</body>
+</html>

@@ -79,11 +79,18 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 10px;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, opacity 0.2s; /* opacity 전환 효과 추가 */
         }
 
         .signup-btn:hover {
             background-color: #1a252f;
+        }
+
+        /* 비활성화 상태 스타일 */
+        .signup-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.7;
         }
 
         .login-link {
@@ -96,6 +103,14 @@
             color: #3498db;
             text-decoration: none;
             font-weight: bold;
+        }
+
+        /* 비밀번호 일치 메시지 스타일 */
+        #pwMatchMsg {
+            font-size: 13px;
+            margin-top: 6px;
+            margin-bottom: 0;
+            min-height: 19px; /* 메시지 없을 때도 공간 유지하여 덜 덜컥거리게 */
         }
     </style>
 </head>
@@ -116,7 +131,15 @@
 
         <div class="input-group">
             <label class="input-label">비밀번호</label>
-            <input type="password" name="password" class="input-field" placeholder="비밀번호를 입력하세요" required>
+            <input type="password" name="password" id="pwInput" class="input-field"
+                   placeholder="비밀번호를 입력하세요" required onkeyup="checkPasswordMatch()">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">비밀번호 확인</label>
+            <input type="password" id="pwConfirmInput" class="input-field"
+                   placeholder="비밀번호를 다시 입력하세요" required onkeyup="checkPasswordMatch()">
+            <p id="pwMatchMsg"></p>
         </div>
 
         <div class="input-group">
@@ -134,7 +157,7 @@
             <input type="text" name="phoneNumber" class="input-field" placeholder="01012345678 (하이픈 제외)">
         </div>
 
-        <button type="submit" class="signup-btn">가입하기</button>
+        <button type="submit" id="submitBtn" class="signup-btn">가입하기</button>
     </form>
 
     <div class="login-link">
@@ -142,5 +165,55 @@
     </div>
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. URL 파라미터 확인 (중복 에러 등)
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorType = urlParams.get('error');
+
+        if (errorType === 'duplicate') {
+            alert("이미 존재하는 아이디입니다.\n다른 아이디를 사용해 주세요.");
+            const newUrl = window.location.pathname;
+            history.replaceState({}, null, newUrl);
+        }
+
+        // 페이지 로드 시 초기화 (버튼 활성 상태 등)
+        checkPasswordMatch();
+    });
+
+    // [추가] 비밀번호 일치 확인 함수
+    function checkPasswordMatch() {
+        const pw = document.getElementById('pwInput').value;
+        const pwConfirm = document.getElementById('pwConfirmInput').value;
+        const msg = document.getElementById('pwMatchMsg');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // 1. 둘 다 비어있을 때 (초기 상태)
+        if (pw === "" && pwConfirm === "") {
+            msg.innerText = "";
+            submitBtn.disabled = false; // 필수 입력 필드(required)가 있으므로 굳이 막지 않아도 브라우저가 막아주지만, UX상 열어둠
+            return;
+        }
+
+        // 2. 입력 중일 때
+        if (pw !== "" && pwConfirm === "") {
+            msg.innerText = "비밀번호 확인을 입력해주세요.";
+            msg.style.color = "#666";
+            submitBtn.disabled = true; // 확인 안 했으면 가입 불가
+            return;
+        }
+
+        // 3. 일치 여부 검사
+        if (pw === pwConfirm) {
+            msg.innerText = "비밀번호가 일치합니다. ✔️";
+            msg.style.color = "#27ae60"; // 초록색
+            submitBtn.disabled = false;  // 가입 버튼 활성화
+        } else {
+            msg.innerText = "비밀번호가 일치하지 않습니다. ❌";
+            msg.style.color = "#e74c3c"; // 빨간색
+            submitBtn.disabled = true;   // 가입 버튼 비활성화
+        }
+    }
+</script>
 </body>
 </html>
