@@ -7,12 +7,13 @@ import com.group.library_system.library_system.api.dto.AladinBookItem;
 import com.group.library_system.library_system.api.dto.AladinResponse;
 import com.group.library_system.library_system.api.dto.NaverResponse;
 import com.group.library_system.library_system.api.dto.NaverBookItem;
-import com.group.library_system.library_system.repository.Book;
-import com.group.library_system.library_system.repository.BookRepository;
+import com.group.library_system.library_system.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -63,6 +64,8 @@ public class BookService {
                 .customerReviewRank(item.getCustomerReviewRank())
                 .isbn(item.getIsbn13())
                 .publishedYear(item.getPubDate())
+                .bookImage(item.getCover())
+                .returnDate(LocalDate.now().plusDays(5))
                 .build();
 
         bookRepository.save(newBook);

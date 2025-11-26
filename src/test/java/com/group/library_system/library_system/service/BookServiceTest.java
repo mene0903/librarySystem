@@ -25,7 +25,7 @@ public class BookServiceTest {
     private BookRepository bookRepository;
 
     private Book createToBook(String isbn) {
-        return new Book(null, "1984", "조지 오웰", 123, 1234, 1.56F, isbn, "2022-20-01");
+        return new Book(null, "1984", "조지 오웰", 123, 1234, 1.56F, isbn, "2022-20-01","image");
     }
 
     @Test
@@ -47,6 +47,7 @@ public class BookServiceTest {
         String isbn2 = "9788937460777";
         //when
         bookService.saveBook(isbn1);
+        //then
         try {
             bookService.saveBook(isbn2); // 두 번째 저장 시도
             fail("예외가 발생해야 합니다."); // 예외 안 나오면 테스트 실패
@@ -54,9 +55,5 @@ public class BookServiceTest {
             // 메시지까지 검증 가능
             assertThat(e.getMessage()).isEqualTo("이미 대출이 되어있는 책입니다.");
         }
-
-        //then
-
-
     }
 }

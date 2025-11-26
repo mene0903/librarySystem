@@ -1,5 +1,7 @@
 package com.group.library_system.library_system.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.group.library_system.library_system.repository.BookRecommendRepository;
 import com.group.library_system.library_system.repository.User;
 import com.group.library_system.library_system.repository.UserRepository;
 import com.group.library_system.library_system.service.UserService;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy; // 예외 테스트용
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest
@@ -24,6 +27,11 @@ public class UserServiceTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private BorrowService borrowService;
+
+    BookRecommendRepository bookRecommendRepository;
 
     private User createTestUser(String id) {
         return new User(null, "Kim", id, "eee", null, "010-0000", null,0,1 ,3);
@@ -110,4 +118,34 @@ public class UserServiceTest {
                 .hasMessageContaining("아이디가 존재하지 않습니다.");
     }
 
+    @Test
+    @DisplayName("회원 탈퇴")
+    void deleteUserSuccess() throws JsonProcessingException {
+        //given
+        User user = createTestUser("123456789");
+        userService.registerUser(user);
+        Long userId = user.getUserId();
+        borrowService.saveBorrow(user.getId(), "9791194530701");
+        borrowService.returnBook(user.getId(), "9791194530701");
+        //when
+        userService.deleteUser(user);
+        //then
+        org.junit.jupiter.api.Assertions.assertTrue(userRepository.findById(userId).isEmpty());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 실패")
+    void deleteUserFail() throws JsonProcessingException {
+        //given
+        User user = createTestUser("123456789");
+        userService.registerUser(user);
+        Long userId = user.getUserId();
+        //when
+        borrowService.saveBorrow(user.getId(), "9791194530701");
+        //then
+        assertThrows(IllegalStateException.class, () -> {
+            userService.deleteUser(user);
+        });
+
+    }
 }

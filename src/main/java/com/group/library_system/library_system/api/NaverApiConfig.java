@@ -25,7 +25,7 @@ public class NaverApiConfig {
     @Bean
     public WebClient naverWebClient() {
         return WebClient.builder()
-                    .baseUrl("https://openapi.naver.com/v1/search/book_adv") // 기본 API URL
+                    .baseUrl("https://openapi.naver.com/v1/search/book") // 기본 API URL
                 // 💡 필수 인증 헤더 추가
                 .defaultHeader("X-Naver-Client-Id", clientId)
                 .defaultHeader("X-Naver-Client-Secret", clientSecret)
