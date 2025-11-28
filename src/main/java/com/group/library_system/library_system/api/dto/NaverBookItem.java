@@ -6,9 +6,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class NaverBookItem {
-    private String title;
-    private String author;
-    private String image;
-    private String isbn;
-    private String description;
+    private String title;           //제목
+    private String author;          //작가
+    private String image;           //책 표지
+    private String isbn;            //isbn
+    private String description;     //책 설명
 }

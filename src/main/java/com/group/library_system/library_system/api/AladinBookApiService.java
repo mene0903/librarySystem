@@ -5,17 +5,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group.library_system.library_system.api.dto.AladinBookItem;
 import com.group.library_system.library_system.api.dto.AladinResponse;
-import lombok.RequiredArgsConstructor;
-import org.hibernate.cache.spi.support.AbstractReadWriteAccess;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.configurationprocessor.json.JSONArray;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +33,7 @@ public class AladinBookApiService {
         this.clientId = clientId;
     }
 
+    //isbn으로 책 검색 -> 상세정보 불러올 수 있음
     public AladinResponse searchBook(String isbn) throws JsonProcessingException {
         String responseString = lookupClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -79,6 +75,8 @@ public class AladinBookApiService {
 
 
     }
+
+    //알라딘 장르 별 베스트셀러 출력 -> 전체 베스트셀러 -> categoryID = 0
     public AladinResponse searchRatingBook(int categoryId, int start, int maxResult) throws JsonProcessingException {
 
         String responseString = itemListClient.get()
@@ -123,15 +121,17 @@ public class AladinBookApiService {
         return response;
     }
 
-    public AladinResponse searchBestSeller() throws JsonProcessingException {
+    //알라딘 장르 별 베스트셀러 출력 -> 전체 베스트셀러 -> categoryID = 0
+    public AladinResponse searchBestSeller(int categoryId) throws JsonProcessingException {
 
         String responseString = itemListClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .queryParam("TTBKey", clientId)
                         .queryParam("QueryType", "BestSeller")
                         .queryParam("SearchTarget", "Book")
+                        .queryParam("CategoryId", categoryId)
                         .queryParam("Start" , 1)
-                        .queryParam("MaxResults", 20)
+                        .queryParam("MaxResults", 50)
                         .queryParam("Output" , "js")
                         .queryParam("Version", "20131101")
                         .build())
@@ -164,39 +164,4 @@ public class AladinBookApiService {
         response.setItem(itemList);
         return response;
     }
-    public AladinResponse lookupBooksByIsbn(List<String> isbnList) throws JsonProcessingException {
-        if (isbnList.isEmpty()) return new AladinResponse();
-
-        String isbns = String.join(",", isbnList); // ISBN을 콤마로 연결
-        String responseString = lookupClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .queryParam("TTBKey", clientId)
-                        .queryParam("ItemIdType", "ISBN")
-                        .queryParam("ItemId", isbns)
-                        .queryParam("Output", "js")
-                        .queryParam("Version", "20131101")
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        if (responseString != null && responseString.startsWith("aladinjs(")) {
-            responseString = responseString.substring("aladinjs(".length(), responseString.length() - 1);
-        }
-
-        Map<String, Object> map = objectMapper.readValue(responseString, new TypeReference<>() {});
-        List<Map<String, Object>> items = (List<Map<String, Object>>) map.get("item");
-        if (items == null) items = Collections.emptyList(); // null이면 빈 리스트로
-
-        List<AladinBookItem> itemList = items.stream()
-                .map(itemMap -> objectMapper.convertValue(itemMap, AladinBookItem.class))
-                .collect(Collectors.toList());
-
-        AladinResponse response = new AladinResponse();
-        response.setItem(itemList);
-        return response;
-    }
-
-
 }

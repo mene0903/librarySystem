@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 import static com.jayway.jsonpath.internal.path.PathCompiler.fail;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -25,7 +27,7 @@ public class BookServiceTest {
     private BookRepository bookRepository;
 
     private Book createToBook(String isbn) {
-        return new Book(null, "1984", "조지 오웰", 123, 1234, 1.56F, isbn, "2022-20-01","image");
+        return new Book(null, "1984", "조지 오웰", 123, 1234, 1.56F, isbn, "2022-20-01","image" , LocalDate.now());
     }
 
     @Test

@@ -1,9 +1,6 @@
 package com.group.library_system.library_system.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.group.library_system.library_system.api.dto.NaverResponse;
 import com.group.library_system.library_system.api.dto.NiciResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -20,7 +17,7 @@ public class NiciBookApiService {
         this.clientId = clientId;
     }
 
-
+    //책 페이지 값을 위한 isbn 검색
     public NiciResponse searchPage(String isbn) {
         return niciWebClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -36,6 +33,5 @@ public class NiciBookApiService {
                 })
                 .bodyToMono(NiciResponse.class)
                 .block();
-
     }
 }

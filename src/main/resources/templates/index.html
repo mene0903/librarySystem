@@ -7,7 +7,13 @@
     <style>
         /* --- CSS Reset & Basic Styles --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Noto Sans KR', Arial, sans-serif; background-color: #fff; color: #333; }
+
+        body {
+            font-family: 'Noto Sans KR', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
         a { text-decoration: none; color: inherit; }
 
         /* --- Theme Colors --- */
@@ -15,90 +21,185 @@
             --main-color: #2c3e50;
             --accent-color: #3498db;
             --bg-color: #f5f7fa;
+            --text-gray: #666;
         }
 
         /* --- Header --- */
         header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 40px; border-bottom: 2px solid #eee;
+            padding: 25px 50px;
+            border-bottom: 1px solid #eee;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
         }
-        .logo { font-size: 24px; font-weight: bold; letter-spacing: -0.5px; color: var(--main-color); cursor: pointer; }
-        .user-menu { display: flex; gap: 15px; }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: var(--main-color); cursor: pointer; }
+        .user-menu { display: flex; gap: 20px; align-items: center; }
         .btn {
-            padding: 8px 16px; border: 1px solid var(--main-color); border-radius: 4px;
+            padding: 10px 20px;
+            border: 1px solid var(--main-color); border-radius: 6px;
             font-size: 14px; font-weight: 600; background: #fff; color: var(--main-color);
             cursor: pointer; transition: all 0.2s;
         }
         .btn:hover { background: var(--main-color); color: #fff; }
 
         /* --- Main Layout --- */
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
 
         /* --- Search Bar --- */
-        .search-box { display: flex; margin: 30px 0; border: 2px solid #333; }
-        .search-box input { flex: 1; padding: 15px; border: none; font-size: 16px; outline: none; }
-        .search-box button { padding: 0 30px; background: #ddd; border: none; border-left: 2px solid #333; cursor: pointer; font-weight: bold; font-size: 16px; }
+        .search-box { display: flex; margin: 0 0 40px 0; border: 2px solid #333; border-radius: 8px; overflow: hidden; }
+        .search-box input { flex: 1; padding: 18px; border: none; font-size: 16px; outline: none; }
+        .search-box button { padding: 0 40px; background: #333; color: #fff; border: none; cursor: pointer; font-weight: bold; font-size: 16px; transition: background 0.2s; }
+        .search-box button:hover { background: #555; }
 
-        /* --- Notice / Section --- */
-        .notice-bar { background-color: #f0f0f0; padding: 10px 15px; margin-bottom: 40px; border: 1px solid #ccc; font-size: 14px; }
-        section { margin-bottom: 60px; }
-        h2 { font-size: 20px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; color: var(--main-color); }
+        /* --- Category Navigation --- */
+        .category-nav {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 20px;
+            margin-bottom: 50px;
+            border-bottom: 1px solid #eee;
+        }
+        .category-nav::-webkit-scrollbar { height: 6px; }
+        .category-nav::-webkit-scrollbar-track { background: #f1f1f1; }
+        .category-nav::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+        .cat-btn {
+            padding: 10px 22px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            background-color: #fff;
+            color: #555;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex; align-items: center; flex-shrink: 0;
+        }
+        .cat-btn:hover { background-color: #f8f9fa; border-color: #bbb; }
+        .cat-btn.active { background-color: var(--main-color); color: #fff; border-color: var(--main-color); box-shadow: 0 4px 10px rgba(44, 62, 80, 0.2); font-weight: 700; }
+
+        .cat-btn.recommend { border-color: var(--accent-color); color: var(--accent-color); }
+        .cat-btn.recommend.active { background-color: var(--accent-color); color: #fff; }
+
+        section { margin-bottom: 80px; }
+        h2 {
+            font-size: 24px; margin-bottom: 30px;
+            border-bottom: 2px solid #eee; padding-bottom: 15px;
+            color: var(--main-color); font-weight: 700;
+        }
 
         /* --- Book Grid --- */
-        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px; }
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 40px;
+        }
 
         .book-card {
-            border: 1px solid #ccc; padding: 15px; background: #fff; text-align: center;
-            transition: transform 0.2s; cursor: pointer;
+            border: 1px solid #eee;
+            padding: 20px;
+            background: #fff; text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            cursor: pointer;
             display: flex; flex-direction: column;
+            transition: box-shadow 0.2s, border-color 0.2s;
         }
-        .book-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--accent-color); }
-        .book-img-placeholder { width: 100%; height: 250px; background-color: #eee; margin-bottom: 15px; overflow: hidden; }
-        .book-img-placeholder img { width: 100%; height: 100%; object-fit: cover; }
-        .book-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .book-author { font-size: 13px; color: #666; }
+        .book-card:hover {
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-color: var(--accent-color);
+        }
+
+        .book-img-placeholder {
+            width: 100%; height: 280px;
+            background-color: #f0f0f0; margin-bottom: 20px;
+            border-radius: 8px; overflow: hidden;
+        }
+        .book-img-placeholder img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .book-card:hover img { transform: scale(1.05); }
+
+        .book-title {
+            font-size: 17px; font-weight: bold;
+            margin-bottom: 8px;
+            color: #222;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .book-author { font-size: 14px; color: var(--text-gray); }
 
         /* --- Modal Styles --- */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
             justify-content: center; align-items: center;
         }
         .modal-window {
-            background-color: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background-color: #fff; border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             position: relative; overflow: hidden;
         }
         .close-modal {
-            position: absolute; top: 10px; right: 20px; font-size: 28px; cursor: pointer; color: #999;
-            transition: color 0.2s; z-index: 100;
+            position: absolute; top: 20px; right: 25px; font-size: 32px;
+            cursor: pointer; color: #aaa; transition: color 0.2s; z-index: 100;
         }
-        .close-modal:hover { color: var(--main-color); }
+        .close-modal:hover { color: #333; }
 
-        #loginModal .modal-window { padding: 40px; width: 90%; max-width: 380px; }
-        .login-title { text-align: center; font-size: 24px; font-weight: bold; color: var(--main-color); margin-bottom: 30px; }
-        .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        .input-field { width: 100%; height: 45px; padding: 10px 15px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
-        .login-submit-btn { width: 100%; height: 45px; background-color: var(--main-color); color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .modal-links { margin-top: 20px; text-align: center; font-size: 13px; color: #666; }
+        /* 로그인 모달 */
+        #loginModal .modal-window { padding: 50px; width: 90%; max-width: 420px; }
+        .login-title { text-align: center; font-size: 28px; font-weight: 800; color: var(--main-color); margin-bottom: 40px; }
+        .input-group { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; }
+        .input-field { width: 100%; height: 50px; padding: 0 20px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
+        .login-submit-btn { width: 100%; height: 50px; background-color: var(--main-color); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-        #bookDetailModal .modal-window { width: 800px; max-width: 90%; display: flex; flex-direction: row; min-height: 400px; }
-        .bd-cover-area { width: 40%; background-color: #f8f8f8; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .bd-cover-area img { width: 100%; max-width: 200px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .bd-info-area { width: 60%; padding: 40px 30px; display: flex; flex-direction: column; }
-        .bd-title { font-size: 22px; font-weight: bold; margin-bottom: 10px; color: var(--main-color); line-height: 1.3;}
-        .bd-meta { font-size: 14px; color: #666; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .bd-meta span { margin-right: 5px; }
-        .bd-rank { color: #f39c12; font-weight: bold; margin-left: 5px; }
-        .bd-desc { font-size: 14px; color: #444; line-height: 1.6; flex: 1; overflow-y: auto; max-height: 200px; margin-bottom: 20px; }
-        .bd-btn-group { margin-top: auto; }
-        .loan-btn { width: 100%; padding: 15px; background-color: var(--accent-color); color: #fff; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        /* [수정] 책 상세 모달 이미지 영역 */
+        #bookDetailModal .modal-window { width: 900px; max-width: 95%; display: flex; flex-direction: row; height: 600px; }
+
+        .bd-cover-area {
+            width: 45%;
+            background-color: #f0f0f0; /* 배경색 살짝 진하게 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0; /* 여백 제거! (꽉 차게) */
+            overflow: hidden; /* 삐져나감 방지 */
+        }
+
+        .bd-cover-area img {
+            width: 100%;  /* 가로 꽉 채움 */
+            height: 100%; /* 세로 꽉 채움 */
+            object-fit: contain; /* 비율 유지하며 꽉 맞춤 */
+            /* 만약 비율 무시하고 꽉 채우려면 object-fit: cover; 사용 */
+        }
+
+        .bd-info-area { width: 55%; padding: 50px 40px; display: flex; flex-direction: column; overflow-y: auto; }
+        .bd-title {
+            font-size: 28px; font-weight: 800; line-height: 1.4;
+            margin-bottom: 15px; color: var(--main-color);
+        }
+        .bd-meta {
+            font-size: 15px; color: #555; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee;
+            display: flex; flex-wrap: wrap; gap: 10px;
+        }
+        .bd-desc {
+            font-size: 16px; color: #444; line-height: 1.8;
+            flex: 1; overflow-y: auto; margin-bottom: 30px;
+            padding-right: 10px;
+        }
+        .loan-btn {
+            width: 100%; padding: 18px;
+            background-color: var(--accent-color); color: #fff; border: none; border-radius: 8px;
+            font-size: 18px; font-weight: bold; cursor: pointer; transition: background-color 0.2s;
+        }
         .loan-btn:hover { background-color: #2980b9; }
 
-        @media (max-width: 700px) {
-            #bookDetailModal .modal-window { flex-direction: column; overflow-y: auto; height: 90%; }
-            .bd-cover-area { width: 100%; height: 250px; }
-            .bd-cover-area img { height: 100%; width: auto; }
-            .bd-info-area { width: 100%; }
+        @media (max-width: 768px) {
+            #bookDetailModal .modal-window { flex-direction: column; height: 90%; }
+            .bd-cover-area { width: 100%; height: 350px; padding: 0; } /* 모바일에서도 꽉 차게 */
+            .bd-info-area { width: 100%; padding: 30px 20px; }
+            .category-nav { padding-bottom: 10px; }
+            .book-grid { gap: 20px; }
         }
     </style>
 </head>
@@ -108,28 +209,49 @@
     <div class="logo" onclick="location.href='/'">LIBRARY SYSTEM</div>
     <div class="user-menu">
         <th:block th:if="${session.loginUser == null}">
-            <button onclick="openLoginModal()" class="btn">LOGIN</button>
+            <button onclick="openLoginModal()" class="btn">로그인</button>
         </th:block>
         <th:block th:if="${session.loginUser != null}">
-            <span th:text="${session.loginUser.name} + '님'" style="align-self: center; font-weight: bold; margin-right: 10px;"></span>
-            <a href="/mypage" class="btn">MY INFO</a>
-            <a href="/logout" class="btn">LOGOUT</a>
+            <span th:text="${session.loginUser.name} + '님'" style="font-weight: bold; font-size:15px;"></span>
+            <a href="/mypage" class="btn">내 정보</a>
+            <a href="/logout" class="btn" style="border-color:#ddd; color:#666;">로그아웃</a>
         </th:block>
     </div>
 </header>
 
 <div class="container">
     <form action="/search" method="get" class="search-box">
-        <input type="text" name="keyword" placeholder="책 제목, 저자 검색">
-        <button type="submit">🔍 Search</button>
+        <input type="text" name="keyword" placeholder="찾고 싶은 책 제목이나 저자를 입력하세요...">
+        <button type="submit">검색</button>
     </form>
 
-    <div class="notice-bar">
-        <span class="notice-label" style="font-weight:bold">NOTICE:</span> 도서관 이용 시간이 변경되었습니다.
-    </div>
+    <nav class="category-nav">
+        <a href="/?categoryId=0"
+           class="cat-btn"
+           th:classappend="${(currentCategory == 0 or currentCategory == null) and currentMode != 'recommend'} ? 'active'">
+            🏆 종합 베스트
+        </a>
+
+        <th:block th:if="${session.loginUser != null}">
+            <a href="/?mode=recommend"
+               class="cat-btn recommend"
+               th:classappend="${currentMode == 'recommend'} ? 'active'">
+                ✨ <span th:text="${session.loginUser.name}">User</span>님 추천
+            </a>
+        </th:block>
+
+        <a href="/?categoryId=1" class="cat-btn" th:classappend="${currentCategory == 1} ? 'active'">소설/시</a>
+        <a href="/?categoryId=170" class="cat-btn" th:classappend="${currentCategory == 170} ? 'active'">경제경영</a>
+        <a href="/?categoryId=987" class="cat-btn" th:classappend="${currentCategory == 987} ? 'active'">과학</a>
+        <a href="/?categoryId=656" class="cat-btn" th:classappend="${currentCategory == 656} ? 'active'">인문</a>
+        <a href="/?categoryId=336" class="cat-btn" th:classappend="${currentCategory == 336} ? 'active'">자기계발</a>
+        <a href="/?categoryId=55889" class="cat-btn" th:classappend="${currentCategory == 55889} ? 'active'">에세이</a>
+        <a href="/?categoryId=351" class="cat-btn" th:classappend="${currentCategory == 351} ? 'active'">IT/컴퓨터</a>
+        <a href="/?categoryId=74" class="cat-btn" th:classappend="${currentCategory == 74} ? 'active'">역사</a>
+    </nav>
 
     <section>
-        <h2 th:text="${sectionTitle}">베스트셀러 / 추천 도서</h2>
+        <h2 th:text="${sectionTitle}">도서 목록</h2>
         <div class="book-grid">
             <div th:each="book : ${recommendList}" class="book-card"
                  onclick="openBookDetail(this)"
@@ -144,16 +266,16 @@
 
                 <div class="book-img-placeholder">
                     <img th:if="${book.cover}" th:src="${book.cover}" alt="표지">
-                    <span th:unless="${book.cover}">No Image</span>
+                    <span th:unless="${book.cover}">이미지 없음</span>
                 </div>
                 <div class="book-title" th:text="${book.title}">책 제목</div>
                 <div class="book-author" th:text="${book.author}">작가 이름</div>
             </div>
 
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #f9f9f9; border-radius: 8px;"
+            <div style="grid-column: 1 / -1; text-align: center; padding: 80px 0; color: #999;"
                  th:if="${#lists.isEmpty(recommendList)}">
-                <h3>📚 목록을 불러올 수 없습니다.</h3>
-                <p style="color: #666; margin-top: 10px;">잠시 후 다시 시도해 주세요.</p>
+                <h3 style="font-size:24px; margin-bottom:10px;">📚 목록을 불러올 수 없습니다.</h3>
+                <p>잠시 후 다시 시도해 주세요.</p>
             </div>
         </div>
     </section>
@@ -170,8 +292,8 @@
             </div>
             <button type="submit" class="login-submit-btn">로그인</button>
         </form>
-        <div class="modal-links">
-            <a href="/signup" style="color: var(--accent-color); font-weight: bold;">회원가입</a>
+        <div class="modal-links" style="margin-top:20px; text-align:center;">
+            <a href="/signup" style="color: var(--accent-color); font-weight: bold; font-size:14px;">회원가입 하기</a>
         </div>
     </div>
 </div>
@@ -185,19 +307,21 @@
         <div class="bd-info-area">
             <h3 id="modalTitle" class="bd-title">책 제목</h3>
             <div class="bd-meta">
-                <span id="modalAuthor">저자</span> |
-                <span id="modalPublisher">출판사</span> |
+                <span id="modalAuthor">저자</span>
+                <span style="color:#ddd">|</span>
+                <span id="modalPublisher">출판사</span>
+                <span style="color:#ddd">|</span>
                 <span id="modalPubDate">출판일</span>
-                <span id="modalRankArea" style="display:none;">
-                     | <span id="modalRank" class="bd-rank"></span>
+                <span id="modalRankArea" style="display:none; margin-left:10px;">
+                     ⭐ <span id="modalRank" class="bd-rank" style="color:#f39c12; font-weight:bold;"></span>
                 </span>
             </div>
             <div id="modalDescription" class="bd-desc">
                 책 설명이 들어가는 곳입니다...
             </div>
-            <div class="bd-btn-group">
+            <div class="bd-btn-group" style="margin-top:auto;">
                 <input type="hidden" id="modalIsbnInput">
-                <button class="loan-btn" onclick="handleLoan()">대출하기</button>
+                <button class="loan-btn" onclick="handleLoan()">대출 신청하기</button>
             </div>
         </div>
     </div>
@@ -241,7 +365,7 @@
         const rankText = document.getElementById('modalRank');
 
         if (rank && parseFloat(rank) > 0) {
-            rankText.innerText = '⭐ ' + rank;
+            rankText.innerText = rank;
             rankArea.style.display = 'inline';
         } else {
             rankArea.style.display = 'none';
@@ -261,9 +385,10 @@
 
     function handleLoan() {
         if (!IS_LOGGED_IN) {
-            alert('로그인이 필요한 서비스입니다.\n로그인 해주세요.');
-            forceCloseBookDetailModal();
-            openLoginModal();
+            if(confirm('로그인이 필요한 서비스입니다.\n로그인 창으로 이동하시겠습니까?')) {
+                forceCloseBookDetailModal();
+                openLoginModal();
+            }
             return;
         }
         if (!confirm('이 책을 대출하시겠습니까?')) return;
@@ -289,29 +414,23 @@
         });
     }
 
-    /* =========================================
-       [수정] 페이지 로드 시 이벤트 처리 (로그인 에러 포함)
-       ========================================= */
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
 
-        // 1. 회원가입 성공 처리
         if (urlParams.has('signupSuccess')) {
-            alert('회원가입이 완료되었습니다! 바로 로그인해 주세요.');
+            alert('환영합니다! 회원가입이 완료되었습니다.\n로그인해 주세요.');
             openLoginModal();
             history.replaceState({}, null, location.pathname);
         }
 
-        // 2. 메시지 처리
         if (urlParams.has('message')) {
             alert(urlParams.get('message'));
             history.replaceState({}, null, location.pathname);
         }
 
-        // 3. [NEW] 로그인 실패 에러 처리
         if (urlParams.has('loginError')) {
             alert('아이디 또는 비밀번호가 일치하지 않습니다.');
-            openLoginModal(); // 로그인 모달 다시 띄워줌 (사용자 편의)
+            openLoginModal();
             history.replaceState({}, null, location.pathname);
         }
     };
@@ -319,4 +438,3 @@
 
 </body>
 </html>
-

@@ -1,9 +1,7 @@
 package com.group.library_system.library_system.api;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -22,6 +20,7 @@ public class NaverApiConfig {
         this.clientSecret = clientSecret;
     }
 
+    //책 검색 -> 제목, 작가 검색 가능
     @Bean
     public WebClient naverWebClient() {
         return WebClient.builder()

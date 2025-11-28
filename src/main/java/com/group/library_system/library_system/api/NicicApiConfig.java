@@ -14,7 +14,7 @@ public class NicicApiConfig {
             @Value("${nici.client.id}") String clientId) {
                 this.clientId = clientId;
     }
-
+    
     @Bean
     public WebClient niciWebClient() {
         return WebClient.builder()

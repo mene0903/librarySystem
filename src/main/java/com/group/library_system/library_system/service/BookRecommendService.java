@@ -1,11 +1,9 @@
 package com.group.library_system.library_system.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.group.library_system.library_system.api.AladinBookApiService;
 import com.group.library_system.library_system.api.NiciBookApiService;
 import com.group.library_system.library_system.api.dto.AladinBookItem;
 import com.group.library_system.library_system.api.dto.AladinResponse;
-import com.group.library_system.library_system.api.dto.NiciBookItem;
 import com.group.library_system.library_system.api.dto.NiciResponse;
 import com.group.library_system.library_system.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +27,10 @@ public class BookRecommendService {
     private final AladinBookApiService aladinBookApiService;
     private final NiciBookApiService niciBookApiService;
 
-
+    /*
+    사용자가 반납한 책의 장르 저장
+    처음 빌린 장르이기에 categoryCount=1로 고정
+     */
     @Transactional
     public void recommendSave(String userId, String isbn) {
         User user = userRepository.findById(userId).get();
@@ -51,6 +53,10 @@ public class BookRecommendService {
         }
     }
 
+    /*
+    사용자가 반납한 책의 장르 업데이트
+    이미 저장이 된 장르일 경우 +1
+     */
     @Transactional
     public void updateMean(User user, String isbn) {
         Borrow borrow = borrowRepository.findByBookIsbn(isbn).get();
@@ -70,108 +76,110 @@ public class BookRecommendService {
         user.setBorrowMean(borrowMean);
         user.setBorrowCountMean(borrowCountMean);
     }
+    private static final Map<String, Integer> PAGE_CACHE = new ConcurrentHashMap<>();
 
+    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(30);
+
+    /*
+    매개변수로 받은 user의 책 추천을 위한 장르 return
+    user db에 저장한 사용자 일 평균 읽은 페이지와 장르를 통합해 책 추천
+    알라딘 API에서 장르를 받아와 국립중앙도서관 API에서 책 페이지를 불러와 일치하는 페이지는 저장, 일치하지 않으면 저장X
+    책 추천 최대 20개, 만약 책 200개를 비교했는데 20개가 안되면 저장된 값만 return
+     */
     @Transactional
-    public List<AladinBookItem> recommendBook(User user) throws JsonProcessingException {
+    public List<AladinBookItem> recommendBook(User user) {
 
-        // 1. 사용자 데이터 기반 필터링 기준 설정
-        int userPage = user.getBorrowCountMean();  // 사용자 평균 페이지 수
-        BookRecommend bookRecommend = bookRecommendRepository.findTopByUserOrderByCategoryCountDesc(user).get(); // 가장 많이 읽은 카테고리
-        userPage*=3;
+        int userPage = user.getBorrowCountMean() * 3;
+        BookRecommend bookRecommend = bookRecommendRepository.findTopByUserOrderByCategoryCountDesc(user).orElseThrow();
 
-        int minPage, maxPage;
-        if (userPage <= 400) {
-            minPage = 0;
-            maxPage = 400;
-        } else if (userPage <= 800) {
-            minPage = 400;
-            maxPage = 800;
-        } else {
-            minPage = 800;
-            maxPage = 3000;
-        }
+        int minPage = (userPage <= 400) ? 0 : (userPage <= 800 ? 400 : 800);
+        int maxPage = (userPage <= 400) ? 400 : (userPage <= 800 ? 800 : 10000);
 
-        List<AladinBookItem> result = new ArrayList<>();
-        Set<String> seenBooks = new HashSet<>();   // 중복 제거용 (ex: 초판본, 특별판 등)
+        //알라딘에서 책 후보군 200개(50개씩 4페이지)를 동시에 가져옵니다.
+        List<CompletableFuture<List<AladinBookItem>>> aladinFutures = new ArrayList<>();
+        int categoryId = bookRecommend.getCategoryId();
 
-        int start = 1;
-        int maxResult = 50;  // 한 번에 가져올 후보 책 수
-        int maxStart = 200;  // 검색 제한 (너무 많이 검색하면 느려지므로)
-
-        // 목표 개수(20개)를 채울 때까지 반복
-        while (result.size() < 20 && start <= maxStart) {
-
-            // 2. 알라딘 API 호출 (해당 카테고리의 인기도서 50권 가져오기)
-            AladinResponse aladinResponse = aladinBookApiService.searchRatingBook(bookRecommend.getCategoryId(), start, maxResult);
-            List<AladinBookItem> items = aladinResponse.getItem();
-
-            // 가져온 책이 없으면 반복 중단
-            if (items == null || items.isEmpty()) break;
-
-            // 3. [핵심] Nici API 병렬 호출 (속도 향상 구간 ⚡️)
-            // 50권의 책에 대해 동시에 '페이지 수 확인' 요청을 보냅니다.
-            List<AladinBookItem> validItems = items.parallelStream()
-                    .map(item -> {
-                        try {
-                            // (1) Nici API 호출 (오래 걸리는 작업)
-                            NiciResponse niciResponse = niciBookApiService.searchPage(item.getIsbn13());
-
-                            // (2) 응답 결과 검증
-                            if (niciResponse != null && niciResponse.getDocs() != null && !niciResponse.getDocs().isEmpty()) {
-                                String pageStr = niciResponse.getDocs().get(0).getPage();
-                                // 숫자만 추출 ("300쪽" -> "300")
-                                String pageStrInt = pageStr.replaceAll("[^0-9]", "");
-
-                                if (!pageStrInt.isEmpty()) {
-                                    int page = Integer.parseInt(pageStrInt);
-
-                                    // (3) 페이지 조건 만족 여부 확인
-                                    if (page >= minPage && page <= maxPage) {
-                                        return item; // 조건에 맞는 책만 반환
-                                    }
-                                }
-                            }
-                        } catch (Exception e) {
-                            // API 호출 중 에러 발생 시(타임아웃 등) 해당 책은 건너뜀
-                        }
-                        return null; // 조건에 안 맞거나 에러 나면 null 반환
-                    })
-                    .filter(Objects::nonNull) // null(조건 탈락한 책) 제거
-                    .collect(Collectors.toList()); // 리스트로 수집
-
-            // 4. [순차 처리] 중복 제거 및 최종 결과 담기
-            for (AladinBookItem validItem : validItems) {
-                // 20개가 다 찼으면 즉시 종료
-                if (result.size() >= 20) break;
-
-                // 중복 판별을 위한 고유 키 생성 (제목_작가)
-                String rawTitle = validItem.getTitle();
-                String cleanTitle = rawTitle.replaceAll("[\\(-].*", "")    // 괄호, 하이픈 뒤 제거
-                        .replaceAll("\\s\\d+$", "")    // 뒤쪽 숫자 제거
-                        .trim();
-
-                String cleanAuthor = validItem.getAuthor().split(",")[0]
-                        .split("\\(")[0]
-                        .trim();
-
-                String uniqueKey = cleanTitle + "_" + cleanAuthor;
-
-                // 이미 추천 목록에 없는 책만 추가
-                if (!seenBooks.contains(uniqueKey)) {
-                    result.add(validItem);
-                    seenBooks.add(uniqueKey);
+        for (int i = 0; i < 4; i++) { // 1, 51, 101, 151 (총 200권 조회)
+            int start = 1 + (i * 50);
+            aladinFutures.add(CompletableFuture.supplyAsync(() -> {
+                try {
+                    AladinResponse response = aladinBookApiService.searchRatingBook(categoryId, start, 50);
+                    return response.getItem() != null ? response.getItem() : new ArrayList<>();
+                } catch (Exception e) {
+                    return new ArrayList<>(); // 에러 나면 빈 리스트 반환
                 }
-            }
-
-            // 다음 50권 검색을 위해 start 인덱스 증가
-            start += 50;
+            }, EXECUTOR));
         }
 
+        // 알라딘 응답이 모두 올 때까지 기다린 후 하나의 리스트로 합칩니다.
+        List<AladinBookItem> allCandidates = aladinFutures.stream()
+                .map(CompletableFuture::join)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        //200개의 책에 대해 Nici 페이지 체크를 병렬로 수행합니다.
+        List<CompletableFuture<AladinBookItem>> filterFutures = allCandidates.stream()
+                .map(item -> CompletableFuture.supplyAsync(() -> {
+                    if (isPageValid(item.getIsbn13(), minPage, maxPage)) {
+                        return item;
+                    }
+                    return null;
+                }, EXECUTOR))
+                .collect(Collectors.toList());
+
+        //결과 수집 및 중복 제거 (선착순 20개)
+        List<AladinBookItem> result = new ArrayList<>();
+        Set<String> seenBooks = new HashSet<>();
+
+        for (CompletableFuture<AladinBookItem> future : filterFutures) {
+            if (result.size() >= 20) break; // 20개 차면 즉시 종료
+
+            try {
+                AladinBookItem item = future.join(); // 먼저 완료된 순서가 아니라 리스트 순서대로 확인
+                if (item != null) {
+                    String uniqueKey = generateUniqueKey(item);
+                    if (!seenBooks.contains(uniqueKey)) {
+                        result.add(item);
+                        seenBooks.add(uniqueKey);
+                    }
+                }
+            } catch (Exception e) {
+                // 개별 작업 실패는 전체 로직에 영향 주지 않음
+            }
+        }
         return result;
     }
+
+    private boolean isPageValid(String isbn, int min, int max) {
+        try {
+            // 1. 캐시 확인
+            if (PAGE_CACHE.containsKey(isbn)) {
+                int page = PAGE_CACHE.get(isbn);
+                return page >= min && page <= max;
+            }
+
+            // 2. 캐시 없으면 API 호출
+            NiciResponse response = niciBookApiService.searchPage(isbn);
+            if (response != null && response.getDocs() != null && !response.getDocs().isEmpty()) {
+                String pageStr = response.getDocs().get(0).getPage().replaceAll("[^0-9]", "");
+                if (!pageStr.isEmpty()) {
+                    int page = Integer.parseInt(pageStr);
+                    PAGE_CACHE.put(isbn, page); // 캐시에 저장
+                    return page >= min && page <= max;
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
+
+    private String generateUniqueKey(AladinBookItem item) {
+        String cleanTitle = item.getTitle().replaceAll("[\\(-].*", "").replaceAll("\\s\\d+$", "").trim();
+        String cleanAuthor = item.getAuthor().split(",")[0].split("\\(")[0].trim();
+        return cleanTitle + "_" + cleanAuthor;
+    }
 }
-
-
 
 /*
 borrowCountMean = 0

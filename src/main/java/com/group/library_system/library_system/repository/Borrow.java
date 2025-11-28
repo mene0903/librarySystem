@@ -6,6 +6,11 @@ import lombok.*;
 
 import java.time.LocalDate;
 
+/*
+borrow db랑 연동
+변수 이름, 타입 동일하게 매핑
+user db, book db 외래키 지정
+ */
 @Entity
 @Table(name = "borrow")
 @Getter
@@ -21,11 +26,11 @@ public class Borrow {
     private Long borrowId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false) // DB 컬럼 이름 지정
+    @JoinColumn(name = "user_id", nullable = false)
     private User user; // Book 엔티티 객체로 변경
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false) // DB 컬럼 이름 지정
+    @JoinColumn(name = "book_id", nullable = false)
     private Book book; // Book 엔티티 객체로 변경
 
     @Column(name = "borrow_date")
