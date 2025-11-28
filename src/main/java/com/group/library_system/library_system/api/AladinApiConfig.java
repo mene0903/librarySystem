@@ -18,6 +18,8 @@ public class AladinApiConfig {
         this.clientId = clientId;
     }
 
+
+    //알라딘 책 상세정보 URL
     @Bean
     @Qualifier("lookupClient")
     public WebClient lookupClient() {
@@ -26,6 +28,7 @@ public class AladinApiConfig {
                 .build();
     }
 
+    //알라딘 책 리스트 URL ex) 베스트셀러 출력 -> 책 상세정보 X, 기본 정보만 있음
     @Bean
     @Qualifier("ItemList")
     public WebClient ItemList() {

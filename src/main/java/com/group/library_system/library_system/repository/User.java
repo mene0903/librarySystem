@@ -6,12 +6,17 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDate; // DB의 DATE 타입에 대응
 
+/*
+변수 이름, 타입 동일하게 매핑
+회원가입 날짜 자동으로 현재날짜 입력
+ */
+
 @Entity
 @Table(name = "user")
-@Getter // Lombok -> 자동 생성
-@Setter // Lombok -> 자동 생성
-@NoArgsConstructor // Lombok -> 기본 생성자 자동 생성
-@AllArgsConstructor // Lombok -> 모든 필드를 인수로 받는 생성자 자동 생성
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id // PK
@@ -35,7 +40,7 @@ public class User {
     private String phoneNumber;
 
     @Column(name = "membership_date", nullable = false)
-    private LocalDate membershipDate; // type = date -> LocalDate 사용
+    private LocalDate membershipDate;
 
     @Column(name = "borrow_count", length = 20)
     private int borrowCount;

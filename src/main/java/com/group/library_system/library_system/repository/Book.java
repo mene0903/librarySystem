@@ -4,8 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 
+/*
+book db랑 연동
+변수 이름, 타입 동일하게 매핑
+ */
 @Entity(name = "bookSave")
 @Table(name = "book")
 @Getter

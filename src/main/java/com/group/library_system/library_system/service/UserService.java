@@ -24,22 +24,29 @@ public class UserService {
         this.borrowRepository = borrowRepository;
     }
 
-
+    /*
+    매개변수로 받은 user 정보를 user db에 저장
+    id 중복 -> 예외처리
+    중복이 아닐 경우 db 저장
+     */
     @Transactional
     public void registerUser(User user) {   //회원 가입
 
         if(userRepository.existsById(user.getId())) {
             throw new IllegalArgumentException("아이디가 중복되었습니다.");
         }
-
-        userRepository.save(user);  //예외가 발생하지 않으면 회원 정보 저장
+        userRepository.save(user);
     }
 
+    /*
+    id, pw를 통한 로그인
+    id, 비밀번호 값이 존재하지 않거나 틀리면 예외처리
+    값이 맞을 경우 user 값을 받아와 return
+     */
     public User login(String id, String password) {
         Optional<User> ID = userRepository.findById(id);
 
         if (ID.isEmpty()) {
-            // 아이디가 존재하지 않으면 예외 발생
             throw new IllegalArgumentException("아이디가 존재하지 않습니다.");
         }
 
@@ -51,6 +58,11 @@ public class UserService {
         return user;
     }
 
+    /*
+    회원 탈퇴
+    빌린 책이 존재할 경우 탈퇴 불가
+    FK로 연결되어 있기에 bookRecommend user 삭제 후 userRepository user 삭제
+     */
     public void deleteUser(User user) {
 
         if(borrowRepository.findByUser(user).isPresent()) {
@@ -61,37 +73,28 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    /*
+    회원 정보 수정
+    UI에서 입력한 값만 변경 -> 전화번호만 입력했으면 전화번호 정보만 변경
+     */
     @Transactional
     public void updateUser(User user) {
-// 1. DB에서 원본 데이터 가져오기 (변하지 않는 ID 기준)
-        // (HTML form에서 readonly로 넘어온 id를 사용)
         User existingUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        // 2. [핵심] 값이 있을 때만 수정 (Null 또는 빈 문자열 체크)
-
-        // (1) 비밀번호: 입력값이 있을 때만 변경 (입력 안 하면 기존 비번 유지)
+        //비밀번호: 입력값이 있을 때만 변경
         if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
             existingUser.setPassword(user.getPassword());
         }
 
-        // (2) 이름: 입력값이 있을 때만 변경
+        //이름: 입력값이 있을 때만 변경
         if (user.getName() != null && !user.getName().trim().isEmpty()) {
             existingUser.setName(user.getName());
         }
 
-        // (3) 전화번호: 입력값이 있을 때만 변경
+        //전화번호: 입력값이 있을 때만 변경
         if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
             existingUser.setPhoneNumber(user.getPhoneNumber());
         }
-
-        // 3. 변경 감지(Dirty Checking)에 의해 트랜잭션 종료 시 자동 UPDATE 쿼리 실행
-        // (혹은 명시적으로 userRepository.save(existingUser); 해도 됩니다)
     }
 }
-
-
-/*
-borrowId -> borrow에서 받아옴
-bookRecommend -> userId 지우기
- */

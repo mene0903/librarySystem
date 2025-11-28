@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,6 +24,7 @@ public class BookService {
     private final AladinBookApiService aladinBookApiService;
     private final BookRepository bookRepository;
 
+    //키워드를 통한 값 return
     public List<NaverBookItem> searchBookForUserSelectionNaver(String keyword) {
         NaverResponse naverResponse = naverBookApiService.searchBook(keyword);
 
@@ -33,6 +33,7 @@ public class BookService {
                 : Collections.emptyList();
     }
 
+    //isbn을 통해 알라딘 API에서 책의 상세정보 return
     public List<AladinBookItem> getAladinDetailsByIsbn(String isbn) throws JsonProcessingException {
         AladinResponse aladinResponse = aladinBookApiService.searchBook(isbn);
 
@@ -41,6 +42,10 @@ public class BookService {
                 : Collections.emptyList();
     }
 
+    /*
+    isbn으로 책의 정보를 가져와 book에 저장
+    만약 book db에 동일 isbn이 있을 경우 예외처리
+     */
     @Transactional
     public void saveBook(String isbn) throws JsonProcessingException {
         List<AladinBookItem> details = getAladinDetailsByIsbn(isbn);

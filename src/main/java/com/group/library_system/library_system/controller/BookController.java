@@ -5,7 +5,6 @@ import com.group.library_system.library_system.api.dto.AladinBookItem;
 import com.group.library_system.library_system.api.NaverBookApiService; // 👈 import 추가
 import com.group.library_system.library_system.api.dto.NaverResponse;
 import com.group.library_system.library_system.api.dto.NaverBookItem;   // 👈 DTO import 확인 필요
-import com.group.library_system.library_system.api.dto.NaverResponse;   // 👈 DTO import 확인 필요
 import com.group.library_system.library_system.repository.Book;
 import com.group.library_system.library_system.repository.BookRecommendRepository;
 import com.group.library_system.library_system.repository.Borrow;
@@ -43,34 +42,65 @@ public class BookController {
     private final NaverBookApiService naverBookApiService;
     private final BorrowService borrowService;
 
-    @GetMapping("/")
-    public String home(Model model, HttpSession session) {
-        // ... (기존 홈 로직 유지) ...
-        User loginUser = (User) session.getAttribute("loginUser");
 
+    //index 페이지
+    @GetMapping("/")
+    public String home(@RequestParam(required = false, defaultValue = "0") int categoryId, // 카테고리 번호 받기
+                       @RequestParam(required = false) String mode, // 추천 모드 확인 (?mode=recommend)
+                       Model model,
+                       HttpSession session) {
+
+        User loginUser = (User) session.getAttribute("loginUser");
         List<AladinBookItem> bookList = new ArrayList<>();
         String sectionTitle = "";
 
         try {
-            if (loginUser == null) {
-                bookList = aladinBookApiService.searchBestSeller().getItem();
-                sectionTitle = "지금 서점에서 가장 인기 있는 책 🔥";
-            }
-            else {
+            // 1. [사용자 맞춤 추천 모드] (버튼 클릭 시)
+            if ("recommend".equals(mode) && loginUser != null) {
                 boolean hasData = bookRecommendRepository.existsByUser(loginUser);
-                if (!hasData) {
-                    bookList = aladinBookApiService.searchBestSeller().getItem();
-                    sectionTitle = loginUser.getName() + "님, 인기도서부터 시작해보세요! 📚";
-                }
-                else {
+
+                if (hasData) {
+                    // 데이터가 충분하면 추천 알고리즘 실행
                     bookList = bookRecommendService.recommendBook(loginUser);
                     sectionTitle = loginUser.getName() + "님을 위한 취향 저격 도서 🎯";
+                } else {
+                    // 데이터가 없으면 종합 베스트셀러 보여주면서 안내
+                    bookList = aladinBookApiService.searchBestSeller(0).getItem();
+                    sectionTitle = loginUser.getName() + "님, 아직 데이터가 부족해요! 인기도서부터 읽어보세요 📚";
                 }
+                model.addAttribute("currentMode", "recommend"); // 버튼 활성화용
             }
+            // 2. [카테고리별 베스트셀러] (종합 포함)
+            else {
+                // Service에 categoryId를 전달 (0이면 종합, 1이면 소설 등)
+                // ★ 주의: AladinBookApiService에 파라미터 받는 searchBestSeller(int)가 있어야 함
+                var response = aladinBookApiService.searchBestSeller(categoryId);
+
+                if (response != null && response.getItem() != null) {
+                    bookList = response.getItem();
+                }
+
+                // 제목 설정 (헬퍼 메서드 사용)
+                sectionTitle = getCategoryName(categoryId);
+                model.addAttribute("currentCategory", categoryId); // 버튼 활성화용
+            }
+
         } catch (Exception e) {
             System.out.println("메인 페이지 에러: " + e.getMessage());
+            e.printStackTrace();
             bookList = Collections.emptyList();
             sectionTitle = "도서 목록을 불러올 수 없습니다.";
+        }
+
+        if (bookList != null) {
+            for (AladinBookItem item : bookList) {
+                String originalCover = item.getCover();
+                if (originalCover != null) {
+                    // 알라딘 이미지 URL 규칙: coversum(작은거) -> cover500(큰거)
+                    String highRes = originalCover.replace("coversum", "cover500");
+                    item.setCover(highRes);
+                }
+            }
         }
 
         model.addAttribute("recommendList", bookList);
@@ -78,7 +108,6 @@ public class BookController {
 
         return "index";
     }
-
     // ... (로그인, 로그아웃, 회원가입 등 기존 메서드 유지) ...
     @PostMapping("/login")
     public String login(@RequestParam("username") String id,
@@ -94,17 +123,21 @@ public class BookController {
             return "redirect:/?loginError=true";
         }
     }
+
+    //로그아웃
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
     }
 
+    //회원가입
     @GetMapping("/signup")
     public String signupPage() {
         return "signup";
     }
 
+    //회원가입
     @PostMapping("/signup")
     public String signup(User user) {
         try {
@@ -117,6 +150,8 @@ public class BookController {
             return "redirect:/signup?error=duplicate";
         }
     }
+
+    //웹에서 받아온 isbn으로 알라딘 책 세부정보 검색
     @GetMapping("/api/book/detail")
     @ResponseBody
     public AladinBookItem getBookDetail(@RequestParam("isbn") String isbn) {
@@ -131,11 +166,9 @@ public class BookController {
         return null;
     }
 
-    // ==========================================
-    // 6. 대출 처리 (AJAX용 JSON 반환으로 수정)
-    // ==========================================
+    //대출 처리
     @PostMapping("/loan")
-    @ResponseBody // 👈 페이지 이동(redirect) 대신 데이터(JSON)만 반환
+    @ResponseBody
     public ResponseEntity<Map<String, Object>> borrowBook(@RequestParam("isbn") String isbn,
                                                           HttpSession session) {
 
@@ -176,9 +209,7 @@ public class BookController {
     }
 
 
-    // ==========================================
-    // 🔍 검색 기능 (추가됨)
-    // ==========================================
+    //검색 기능 (추가됨)
     @GetMapping("/search")
     public String search(@RequestParam("keyword") String keyword,
                          Model model,
@@ -226,6 +257,7 @@ public class BookController {
         return "index";
     }
 
+    //개인 페이지
     @GetMapping("/mypage")
     public String myPage(Model model, HttpSession session) {
         User loginUser = (User) session.getAttribute("loginUser");
@@ -255,7 +287,7 @@ public class BookController {
                 item.setCover(book.getBookImage());
                 item.setIsbn13(book.getIsbn()); // DB의 ISBN을 DTO의 isbn13에 매핑
 
-                // 3. [핵심] Borrow 엔티티에 있는 날짜 정보를 DTO에 넣기
+                //Borrow 엔티티에 있는 날짜 정보를 DTO에 넣기
                 if (borrow.getReturnDate() != null) {
                     item.setReturnDate(borrow.getReturnDate().format(formatter));
                 }
@@ -263,7 +295,6 @@ public class BookController {
                     item.setLoanDate(borrow.getBorrowDate().format(formatter));
                 }
 
-                // (선택사항) 설명 필드에도 넣고 싶다면 유지
                 item.setDescription(
                         "Due Date: " + item.getReturnDate() + "<br>" +
                                 "Loan Date: " + item.getLoanDate()
@@ -277,13 +308,11 @@ public class BookController {
         return "mypage";
     }
 
-    // ==========================================
-    // [추가] 2. 회원 정보 수정
-    // ==========================================
+    //회원 정보 수정
     @PostMapping("/user/update")
     public String updateUser(User formUser, HttpSession session) { // formUser: 화면에서 입력한 값(비번, 이름 등)
 
-        // 1. 현재 로그인된 사용자 정보 가져오기 (가장 확실한 ID 출처)
+        // 1. 현재 로그인된 사용자 정보 가져오기
         User loginUser = (User) session.getAttribute("loginUser");
 
         if (loginUser == null) {
@@ -291,20 +320,20 @@ public class BookController {
         }
 
         try {
-            // [디버깅] 콘솔 로그로 값 확인 (실행 후 인텔리제이 콘솔 확인해보세요)
+            //콘솔 로그로 값 확인
             System.out.println("=== 회원 정보 수정 요청 ===");
             System.out.println("대상 ID (세션): " + loginUser.getId());
             System.out.println("변경할 이름: " + formUser.getName());
             System.out.println("변경할 비번: " + formUser.getPassword());
 
-            // 2. [핵심] 폼에서 넘어온 ID 대신, 세션의 ID를 formUser에 강제로 주입
+            // 2. [핵심] 폼에서 넘어온 ID 대신, 세션의 ID를 formUser에 강제 주입
             // (HTML input name이 틀려도, 이걸로 해결됨)
             formUser.setId(loginUser.getId());
 
             // 3. 업데이트 서비스 호출
             userService.updateUser(formUser);
 
-            // 4. 세션 정보도 최신화 (화면에 반영되도록)
+            // 4. 세션 정보 최신화
             // (비밀번호는 세션 객체에 굳이 업데이트 안 해도 되지만, 이름/번호는 해야 함)
             if (formUser.getName() != null && !formUser.getName().trim().isEmpty()) {
                 loginUser.setName(formUser.getName());
@@ -319,16 +348,16 @@ public class BookController {
             return "redirect:/mypage?updateSuccess=true";
 
         } catch (Exception e) {
-            // 에러 내용을 콘솔에 자세히 출력
+            // 에러 내용을 콘솔에 출력
             e.printStackTrace();
             System.out.println("수정 실패 원인: " + e.getMessage());
 
             // 에러 메시지를 화면으로 전달
             return "redirect:/mypage?error=" + URLEncoder.encode("수정 실패", StandardCharsets.UTF_8);
         }
-    }    // ==========================================
-    // [추가] 3. 회원 탈퇴
-    // ==========================================
+    }
+
+    //회원 탈퇴
     @PostMapping("/user/delete")
     public String deleteUser(HttpSession session) {
         User loginUser = (User) session.getAttribute("loginUser");
@@ -347,7 +376,6 @@ public class BookController {
             return "redirect:/?message=" + URLEncoder.encode("회원 탈퇴가 완료되었습니다.", StandardCharsets.UTF_8);
 
         } catch (IllegalStateException e) {
-            // [중요] 서비스에서 "책 반납하세요" 라고 던진 에러를 잡는 곳
             String errorMsg = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
             return "redirect:/mypage?error=" + errorMsg;
 
@@ -356,13 +384,12 @@ public class BookController {
             return "redirect:/mypage?error=" + URLEncoder.encode("잘못된 회원 ID 형식입니다.", StandardCharsets.UTF_8);
 
         } catch (Exception e) {
-            // 그 외 알 수 없는 에러
             e.printStackTrace();
             return "redirect:/mypage?error=" + URLEncoder.encode("탈퇴 처리 중 오류가 발생했습니다.", StandardCharsets.UTF_8);
         }
-    }    // ==========================================
-    // [추가] 4. 도서 반납 (AJAX)
-    // ==========================================
+    }
+
+    // 도서 반납
     @PostMapping("/return")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> returnBook(@RequestParam("isbn") String isbn,
@@ -391,11 +418,7 @@ public class BookController {
         }
     }
 
-    // BookController.java에 추가
-
-    // ==========================================
-// [추가] 도서 연장 (AJAX)
-// ==========================================
+    //도서 연장
     @PostMapping("/renew")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> renewBook(@RequestParam("isbn") String isbn,
@@ -411,12 +434,6 @@ public class BookController {
         }
 
         try {
-            // 2. 연장 서비스 호출
-            // *주의: BorrowService의 returnDateRenew는 userId를 받지 않으므로,
-            //       userId 확인 로직이 필요하거나 Service 함수를 수정해야 할 수 있습니다.
-            //       (제공된 Service 코드 기준으로 일단 호출)
-
-            // 현재 Service 코드가 String userId를 받으므로, loginUser의 ID를 넘깁니다.
             borrowService.returnDateRenew(loginUser.getId(), isbn);
 
             response.put("success", true);
@@ -436,5 +453,18 @@ public class BookController {
             return ResponseEntity.badRequest().body(response);
         }
     }
-
+    private String getCategoryName(int categoryId) {
+        switch (categoryId) {
+            case 0: return "지금 서점에서 가장 인기 있는 책 🔥";
+            case 1: return "소설/시/희곡 베스트셀러 📖";
+            case 170: return "경제경영 베스트셀러 💰";
+            case 987: return "과학 베스트셀러 🧪";
+            case 656: return "인문학 베스트셀러 🏛️";
+            case 336: return "자기계발 베스트셀러 ✨";
+            case 55889: return "에세이 베스트셀러 ✍️";
+            case 351: return "IT/컴퓨터 베스트셀러 💻";
+            case 74: return "역사 베스트셀러 ⏳";
+            default: return "도서 베스트셀러 📚";
+        }
+    }
 }
