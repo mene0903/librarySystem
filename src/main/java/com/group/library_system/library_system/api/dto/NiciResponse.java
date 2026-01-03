@@ -11,6 +11,7 @@ import java.util.List;
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NiciResponse {
+
     @JsonProperty("docs")
     private List<NiciBookItem> docs;
 }

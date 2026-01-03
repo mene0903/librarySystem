@@ -190,3 +190,10 @@ borrowCount += 1
 borrowMean += page / (returnDate - borrowDate)
 borrowCountMean = borrowMean/borrowCount
  */
+
+/*
+key
+startRowNumApi
+endRowNemApi
+drCode  분류번호(11:문학, 6:인문과학, 5:사회과학, 4:자연과학)
+ */
